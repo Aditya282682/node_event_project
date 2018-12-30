@@ -1,0 +1,363 @@
+<style>
+    .activeCondition{
+        background-color: #2ec1cc !important;
+        color: #fff;
+    }
+    .andCodition,.orCodition{
+        width: 40px;
+        text-align: center;
+        background-color:#ffffff;
+        border: 1px solid #eee;
+        cursor:pointer;
+    }
+    .topBod, .bottomBod {
+        border-right: 1px solid #988888;
+        padding: 5px;
+        margin-left: 2px;
+        width: 30px;
+    }
+    .form-group {
+        margin-bottom: 0px;
+    }
+</style>
+
+<div style='background-color: #fff;'>
+    <div class="row">
+        <div class="row" style='padding-bottom:8px;padding-top:15px;'>
+            <div class='col-sm-1'>
+            </div>
+            <div class='col-sm-3'>
+                Event
+            </div>
+            <div class='col-sm-6'>
+                <input type="text" class="form-control" name="event" id="event" value="<?php print !empty($pushevent[0]['event'])?$pushevent[0]['event']:''; ?>" />
+                <span id="pTypeErrorevent" style="color: red;display: none;font-size: 11px;">Required*</span>
+            </div>
+            <div class='col-sm-2'>
+            </div>
+        </div>
+        <div class="row" style='padding-bottom:8px;'>
+            <div class='col-sm-1'>
+            </div>
+            <div class='col-sm-3'>
+                Scope
+            </div>
+            <div class='col-sm-6'>
+            <div class="row">
+                <div class="col-sm-12" style="margin-bottom:5px;">
+                    <span><input type="radio" name="scope" value="1" <?php print (!empty($pushevent[0]['scope']) && in_array($pushevent[0]['scope'],[1]))?'checked':'' ;?>> On every visit</span>
+                </div>
+                <div class="col-sm-12" style="margin-bottom:5px;">
+                    <span><input type="radio" name="scope" value="2" <?php print (!empty($pushevent[0]['scope']) && in_array($pushevent[0]['scope'],[2]))?'checked':'' ;?>> Per Session</span>
+                </div>
+                <div class="col-sm-12" >
+                    <span><input type="radio" name="scope" value="3" <?php print (!empty($pushevent[0]['scope']) && in_array($pushevent[0]['scope'],[3]))?'checked':'' ;?>> Once in lifetime</span>
+                </div>
+            </div>
+            <div class="row" style='margin-top:10px;'>
+                <div class="col-sm-4" style="padding-right:0px;">
+                    <span><input type="radio" name="scope" value="4" <?php print (!empty($pushevent[0]['scope']) && !in_array($pushevent[0]['scope'],[1,2,3]))?'checked':'' ;?>> Custom</span>
+                </div>
+                <div class="col-sm-4 scopeInput <?php print (!empty($pushevent[0]['scope']) && in_array($pushevent[0]['scope'],[1,2,3]))?'hidden':'' ;?>">
+                    <input class='form-control' type='text' onkeypress='return event.charCode >= 48 && event.charCode <= 57' name='custom_scope' id='custom_scope'  style='padding-right:0px;' value="<?php print (!empty($pushevent[0]['scope']) && !in_array($pushevent[0]['scope'],[1,2,3]))?explode('_',$pushevent[0]['scope'])[1]:'' ;?>"/>
+                </div>
+                <div class="col-sm-2 scopeInput <?php print (!empty($pushevent[0]['scope']) && in_array($pushevent[0]['scope'],[1,2,3]))?'hidden':'' ;?>" style='font-size: 15px;padding-left: 6px;'>
+                    Days
+                </div>
+            </div>
+            </div>
+            <div class='col-sm-2'>
+            </div>
+        </div>
+        <div class="row" style='padding-bottom:8px;'>
+            <div class='col-sm-1'>
+            </div>
+            <div class='col-sm-3'>
+                ltv
+            </div>
+            <div class='col-sm-6'>
+                <input type="number" class="form-control" id="ltv" name="ltv" value="<?php if(!empty($pushevent[0]['ltv'])){print $pushevent[0]['ltv'];}?>" />
+                <span id="pTypeErrorltv" style="color: red;display: none;font-size: 11px;">Required*</span>
+            </div>
+            <div class='col-sm-2'>
+            </div>
+        </div>
+        <div class="row" style='padding-bottom:8px;'>
+            <div class='col-sm-1'>
+            </div>
+            <div class='col-sm-3'>
+                Attributes
+            </div>
+            <script>
+                $(document).ready(function() {
+                    var attributes = $('#attributes').sheepIt({
+                        separator: '',
+                        allowRemoveLast: false,
+                        allowRemoveCurrent: true,
+                        allowRemoveAll: false,
+                        allowAdd: true,
+                        allowAddN: false,
+                        maxFormsCount: 5,
+                        minFormsCount: 1,
+                        <?php if(is_array($pushevent[0]['attributes'])){ ?>
+                            data: [
+                                <?php foreach($pushevent[0]['attributes'] as $key => $val){ ?>
+                                {
+                                    'attributes_#index#_e': '<?php print !empty($val['e'])?$val['e']:"";?>',
+                                    'attributes_#index#_d': '<?php print !empty($val['d'])?$val['d']:"";?>'
+
+                                },
+                                <?php }?>
+                            ]
+                        <?php }?>
+                       
+                    });
+                });		
+            </script>
+            <div class='col-sm-6'>
+                <div id = "attributes">
+                    <div id="attributes_template">
+                        <div class="form-group row" style="margin-bottom:15px;">
+                            <div class="col-sm-5" style="padding-right:0px;">
+                                <input id="attributes_#index#_e" class="form-control" name="attributes[#index#][e]" type="text" value = "" />
+                            </div>
+                            <div class="col-sm-5" style="padding-right:0px;">
+                                <input id="attributes_#index#_d" class="form-control" name="attributes[#index#][d]" type="text" value = "" />
+                            </div>
+
+                            <div class="col-sm-2" style="    margin-top: 10px;">
+                                <a id="attributes_remove_current"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="attributes_noforms_template">
+                        No rules defined
+                    </div>
+               
+
+                    <div  style="text-align: left;padding-left:5px;margin-top:15px;" id="attributes_controls">
+                        <a id="attributes_add" class="btn btn-info btn-xs" style="margin-left: -4px;">Add More Field</a>
+                    </div>
+                </div>
+            </div>
+            <div class='col-sm-2'>
+            </div>
+        </div>
+        <div class="row" style='padding-bottom:8px;'>
+            <div class='col-sm-1'>
+            </div>
+            <?php if(!empty($pushevent[0]['url'])){ ?>
+                <div class='col-sm-3'>
+                    Integration page
+                </div>
+                <div class='col-sm-6'>
+                    <input type="text" class="form-control" id="url" name="url" required="required" value="<?php if(!empty($pushevent[0]['url'])){print $pushevent[0]['url'];}?>"/>
+                    <span id="pTypeErrorurl" style="color: red;display: none;font-size: 11px;" class="pTypeErrorurl">Required*</span>
+                </div>
+            <?php } else { ?>
+            <div class='col-sm-3'>
+                Page URL
+            </div>
+            <script>
+                $(document).ready(function() {
+                    var urlDetails = $('#urlDetails').sheepIt({
+                        separator: '',
+                        allowRemoveLast: false,
+                        allowRemoveCurrent: true,
+                        allowRemoveAll: false,
+                        allowAdd: true,
+                        allowAddN: false,
+                        maxFormsCount: 5,
+                        minFormsCount: 1,
+                        <?php if(is_array($pushevent[0]['urlDetails'])){ ?>
+                            data: [
+                                <?php foreach($pushevent[0]['urlDetails'] as $key => $val){ ?>
+                                {
+                                    'urlDetails_#index#_t': '<?php print !empty($val['t'])?$val['t']:"";?>',
+                                    'urlDetails_#index#_u': '<?php print !empty($val['u'])?$val['u']:"";?>'
+                                },
+                                <?php }?>
+                            ]
+                        <?php }?>
+                    });
+                });		
+            </script>
+            <div class='col-sm-6'>
+                <div id = "urlDetails">
+                    <div id="urlDetails_template">
+                        <div class="totalCondition_#index# pageConditionNew" name="totalCondition[#index#]">
+                            <div class="topBod" id="top_#index#" name="top[#index#]"></div>                  
+                                <div class="row">
+                                    <div class="col-sm-1" style="margin-left: 0px;">
+                                        <div type="text" class="andCodition <?php if(isset($pushevent[0]['gcRule']) && $pushevent[0]['gcRule'] == 0){print "activeCondition";}?>" style="    font-size: 9px;padding: 3px;border-radius: 5px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;border-right: 1px solid #988888 !important;    border-color: #cbd5dd;">
+                                         AND
+                                    </div>
+                                </div>
+                                <div class="col-sm-1" style="">
+                                    <div type="text" class="orCodition <?php if(!empty($pushevent[0]['gcRule']) && $pushevent[0]['gcRule'] == 1){print "activeCondition";}?>" style="font-size: 9px;padding: 3px;border-radius: 5px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;border-left: 1px solid #988888 !important;    border-color: #cbd5dd;">
+                                        OR
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bottomBod" id="bottom_#index#" name="bottom[#index#]"></div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-5" style="padding-right:0px;">
+                                <select style="padding:0px;" class="form-control"  id="urlDetails_#index#_t" name="urlDetails[#index#][t]">
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 40){print "selected";} ?>  value="40">Contains</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 10){print "selected";} ?>  value="10">Equals to</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 45){print "selected";} ?>  value="45">Starts with</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 35){print "selected";} ?>  value="35">Ends with</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 15){print "selected";} ?>  value="15">Not equals to</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 20){print "selected";} ?>  value="20">Not contains</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 30){print "selected";} ?>  value="30">Not starts with</option>
+                                    <option <?php if(!empty($value['urlType']) && $value['urlType'] == 25){print "selected";} ?>  value="25">Not ends with</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-5" style="padding-right:0px;">
+                                <input id="urlDetails_#index#_u" class="form-control urlVal" name="urlDetails[#index#][u]" type="text" value = "" />
+                            </div>
+
+                            <div class="col-sm-2" style="    margin-top: 10px;">
+                                <a id="urlDetails_remove_current"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="urlDetails_noforms_template">
+                        No rules defined
+                    </div>
+                
+
+                    <div  style="text-align: left;padding-left:5px;margin-top:15px;" id="urlDetails_controls" >
+                        <a id="urlDetails_add" class="btn btn-info btn-xs" style="margin-left: -4px;">Add More Field</a>
+                    </div>
+                </div>
+            </div>
+            <?php } ?>
+            <div class='col-sm-2'>
+            </div>
+        </div>
+       
+        <div class="row" style="margin-top:15px;padding-bottom:30px;">
+            <div class="col-sm-3">
+            </div>
+            <div class="col-sm-6" style="text-align:center;">
+                <button id="" class="push_event_Edit btn btn-primary" type="submit" value="Submit"><span><span>Update</span></span></button>
+            </div>
+            <div class="col-sm-3">
+            </div>
+            
+        </div>
+    </div>
+</div>
+<script>
+    $(function(){
+        $('.totalCondition_0').addClass('hidden');
+        <?php if(!empty($pushevent[0]['gcRule']) && $pushevent[0]['gcRule'] == 1){ ?>
+            var conditionValNew = 1;    
+        <?php }else{ ?>
+            var conditionValNew = 0;    
+        <?php } ?>
+
+        $(document).on('click','.andCodition',function(){
+            $('.orCodition').removeClass('activeCondition');
+            $('.andCodition').addClass('activeCondition');
+            conditionValNew = 0;
+        });
+        $(document).on('click','.orCodition',function(){
+            $('.andCodition').removeClass('activeCondition');
+            $('.orCodition').addClass('activeCondition');
+            conditionValNew = 1;
+        });
+        $(document).on('click','.addFieldNew',function(){
+            if(conditionValNew == 1){
+                $('.andCodition').removeClass('activeCondition');
+                $('.orCodition').addClass('activeCondition');
+            }else{
+                $('.orCodition').removeClass('activeCondition');
+                $('.andCodition').addClass('activeCondition');
+            }
+        });
+
+        var scopeVal;
+        var scopeValue = $('input[name=scope]:checked').val();
+        $(document).on('change', '[name="scope"]',function(){
+            scopeVal = this.value;
+            if(scopeVal == 4){
+                $('.scopeInput').removeClass('hidden');
+            }else{
+                $('.scopeInput').addClass('hidden');
+                scopeValue = scopeVal;
+            }
+        });
+
+        $(document).on('click','.push_event_Edit',function(e){
+            e.stopImmediatePropagation();
+            if(scopeVal == 4 || scopeValue == 4){
+                inp = $('#custom_scope').val();
+                if(inp == '' || inp == 0){
+                    sweet_alert('101','Scope value cannot be empty or zero');
+                    return false;
+                }else if(scopeValue == 4){
+                    scopeValue = scopeValue+'_'+inp;
+                }else{
+                    scopeValue = scopeVal+'_'+inp;
+                }
+                
+            }
+            
+            <?php if(!empty($pushevent[0]['url'])){ ?>
+                var url = $("#url").val();
+                if(!url){   
+                    $("#pTypeErrorurl").show();
+                    return false;
+                } else {
+                    $("#pTypeErrorurl").hide();
+                }
+            <?php }?>
+
+            if($("#event").val() == ''){   
+                $("#pTypeErrorevent").show();
+                return false;
+            } else {
+                $("#pTypeErrorevent").hide();
+            }
+            
+            if($("#ltv").val() == ''){   
+                $("#pTypeErrorltv").show();
+                return false;
+            } else {
+                $("#pTypeErrorltv").hide();
+            }
+            var editId = $("#editmodalLebel2").html();
+            editId = editId.split("-");
+            editId = editId[1].trim();
+            var data = {
+                pushEventID: editId,
+                event: $("#event").val(),
+                attributes: $('#attributes :not(:hidden)').serializeArray(),
+                urlDetails: $('#urlDetails :not(:hidden)').serializeArray(),
+                url: $("#url").val(),
+                ltv: $("#ltv").val(),
+                gcRule: conditionValNew,
+                scope: scopeValue,
+                csrf_token: '<?php print $csrf_token; ?>',
+                submit: 1
+            };
+            $("#pTypeErrorevent").hide();
+            $("#pTypeErrorltv").hide();
+            $("#pTypeErrorurl").hide();
+            var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_UPDATE_URL']."'";?>;
+            customAjaxCall(url, data, editwebUrlResponse);
+            return false;
+        });
+            
+        function editwebUrlResponse(output){
+            sweet_alert(output.status_code, output.message);
+            $(".modal-backdrop").hide();
+            $("#main").html(output.html);
+        }
+    });
+</script>

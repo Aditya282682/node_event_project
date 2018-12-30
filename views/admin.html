@@ -1,0 +1,978 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+define('ROOT_PATH', dirname(__FILE__));
+include_once(ROOT_PATH.'/brand_base.php');
+
+class Admin extends Brand_base {
+
+	function __construct () {
+		parent::__construct(); 
+	}
+        
+        function index(){
+            $this->_redirectToUrl($this->appUrls['BRAND_ANALYTICS_OVERVIEW_URL']);
+        }
+                
+	function logout() {
+                $productName = !empty($_REQUEST['productName']) ? $_REQUEST['productName'] : 'analytics';
+		$result = $this->scapyauth->brandLogout($productName);
+                $result = $this->scapyauth->subAccountLogout($productName);
+		$this->_redirectToUrl($this->appUrls['BRAND_PARENT_URL']);
+	}
+    
+    function demo_account(){
+        if(!empty($_REQUEST['action']) && $_REQUEST['action'] == "set"){
+            $this->scapyauth->setDemoAccount();
+        }elseif(!empty($_REQUEST['action']) && $_REQUEST['action'] == "unset"){
+            $this->scapyauth->unsetDemoAccount();
+        }
+        $this->_redirectToUrl($this->appUrls['BRAND_ANALYTICS_OVERVIEW_URL']);
+    }
+    
+	function home(){
+             $data = array();
+             $data['html'] = $this->_loadView('retailer/user_home','',TRUE);
+             
+             $response['html'] = $this->_loadView('retailer/home',$data,TRUE);
+             $this->_sendResponse($response);
+	} 
+        
+        ///////////////////////////////////////////////////////////
+	//XXXXXXXXXXXXXXXXXXXX BILLING XXXXXXXXXXXXXXXXXXXXXXXXXX
+	///////////////////////////////////////////////////////////
+	
+	/**
+	 * current active features of brand 
+	 */
+	function currentPlan(){
+            $this->load->model("notifications/m_subscription");
+            $params['brandID'] = $this->selfUID;
+            $subscriptionArr = $this->m_subscription->fetch($params);
+            $data = array();
+            if(is_array($subscriptionArr)){
+                $data = $subscriptionArr[0];
+            }
+
+            $this->load->model("notifications/m_subscription_check");
+            $data['subscription_check'] = $this->m_subscription_check->fetch($this->selfUID);
+
+            $response['html'] = $this->_loadView('retailer/subscription/currentPlan',$data,true);
+            $this->_sendResponse($response);
+	}
+	
+	function upgradePlan(){
+		$response['html'] = $this->_loadView('retailer/subscription/upgradePlan','',true);
+		$this->_sendResponse($response);
+	}
+        
+        //////////////////////////////////////////////////////////////
+	//XXXXXXXXXXXXXXXX PROFILE XXXXXXXXXXXXXXXX
+	//////////////////////////////////////////////////////////////
+	
+	function editBasicInfo(){
+            $this->_htmlPurify();
+		$data = array();
+                $data['csrf_token'] = $this->csrf_token;
+		if(!empty($_REQUEST['submit'])){
+                    $this->_csrfToken();
+
+			if(!empty($_REQUEST['name'])){
+					
+				$params['name'] = $_REQUEST['name'];
+                                
+                                if(!empty($_REQUEST['country'])){
+                                    $params['country'] = $_REQUEST['country'];
+                                }
+                                if(!empty($_REQUEST['mobile'])){
+                                    $params['mobile'] = $_REQUEST['mobile'];
+                                }
+                                if(!empty($_REQUEST['website'])){
+                                    $params['website'] = $_REQUEST['website'];
+                                }
+                                if(isset($_REQUEST['language'])){
+                                    $params['language'] = $_REQUEST['language'];
+                                }
+                                if(isset($_REQUEST['timezone'])){
+                                    $params['timezone'] = $_REQUEST['timezone'];
+                                }
+                               // print_r ($params);die('123');
+				$result = $this->m_brands->update($this->selfUID, $params);
+                                
+				if($result > 0){
+					$data['type'] = 'success';
+					$data['message'] = 'Successfully updated';
+				} elseif($result == -105){
+                                    $data['message'] = 'You are using a demo account. Data will not be updated.';
+                                } else {
+					$data = array(  'type' => 'fail',
+									'message' => 'Please try again!');			
+				}
+			} else {
+				$data = array(  'type' => 'fail',
+						'message' => 'Please enter the required fields');
+			}
+                    
+			$this->_sendResponse($data);
+		}
+		
+		$response = array();
+		$response['html'] = $this->_loadView('retailer/profile/basicInfo',$data,true);
+		$this->_sendResponse($response);
+	}
+        
+        function editProfilePassword(){
+            $this->_htmlPurify();
+		$data = array();
+                $data['csrf_token'] = $this->csrf_token;
+		if(!empty($_REQUEST['submitpassword'])){
+                     $this->_csrfToken();
+			$type = false;
+			if(trim($_REQUEST['password'])!='' && trim($_REQUEST['npassword'])!='' && trim($_REQUEST['cnpassword'])!=''){
+				$type = true;
+			} else {
+				$data['message'] = 'Please enter all the 3 passwords';
+				$type = false;
+			}
+			if($type && isset($_REQUEST['npassword'])){
+				$result = $this->scapyauth->valid_password($_REQUEST['npassword']);
+				if(!$result){
+					$data['message'] = 'Please enter a valid new password';
+					$type = false;
+				}
+			}
+			if($type && ($_REQUEST['cnpassword'] == $_REQUEST['npassword'])){
+				$result = $this->m_brands->updatePassword($this->selfUID,$_REQUEST['password'],$_REQUEST['npassword']);
+				if($result>0){
+					$data['message'] = 'Password successfully updated';
+					$data['responseType'] = 'success';
+					print json_encode($data);
+					exit;
+				}elseif($result == -105){
+                                        $data['message'] = 'You are using a demo account. Data will not be updated.';
+                                }  elseif($result == -2){
+                                        $data['message'] = 'Current password is incorrect';
+					$type = false;
+                                }else {
+					$data['message'] = 'Unable to update the password';
+					$type = false;
+				}
+			} else {
+				$data['message'] = 'The 2 passwords do not match';
+				$type = false;
+			}
+                    
+			$data['responseType'] = 'fail';
+			$this->_sendResponse($data);
+                }
+		
+		$data['list'] = $this->_brandinfo($this->selfUID);
+		$response = array();
+		$response['html'] = $this->_loadView('retailer/profile/changePassword',$data,true);
+		$this->_sendResponse($response);
+	}
+        
+        function reportMail(){
+		$data = array();
+                $data['csrf_token'] = $this->csrf_token;
+                if(!empty($_REQUEST['submit']) && !empty($this->selfUID)){
+                    $params = array();
+                    $this->_csrfToken();
+                    if(isset($_REQUEST['analyticsMail'])){
+                            $params['analyticsMail'] = $_REQUEST['analyticsMail'];
+                    }
+                    if(isset($_REQUEST['analyticsMail_push'])){
+                            $params['analyticsMail_push'] = $_REQUEST['analyticsMail_push'];
+                    }
+                    if(isset($_REQUEST['analyticsMail_event'])){
+                            $params['analyticsMail_event'] = $_REQUEST['analyticsMail_event'];
+                    }
+                    if(isset($_REQUEST['email'])){
+                        $mail_list = array();
+                        $length = count($_REQUEST['email']);
+                        for($i=0; $i < $length; $i+=1){
+                            if(!empty($_REQUEST['email'][$i]['value'])){
+                                $mail_list[] = $_REQUEST['email'][$i]['value'];
+                            }
+                        }
+                        if(is_array($mail_list)){
+                         $params['reportMails'] = implode(",", $mail_list); 
+                        }
+                    }
+                    $result = $this->m_brands->update($this->selfUID, $params);
+                    if($result > 0){
+                            $data['responseType'] = 'success';
+                            $data['message'] = 'Successfully updated';
+                            $data['status_code'] = '103';
+                    }elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                    }  else {
+                            $data = array( 'message' => 'Please try again!');	
+                            $data['status_code'] = '101';
+                    }
+
+                    $this->_sendResponse($data);
+		}	
+		
+		$data['list'] = $this->_brandinfo($this->selfUID);
+		$response = array();
+		$response['html'] = $this->_loadView('retailer/profile/reportMail',$data,true);
+		$this->_sendResponse($response);
+	}
+        
+        /**************************Account Logs*************************************************/
+        
+        function accountLogs(){
+            $data = array();
+            $params = array();
+            $params['brandID'] = $this->selfUID;
+            $params['panel'] = 1;
+
+            $params['startTime'] = (!empty($_REQUEST['fromDate'])) ? $_REQUEST['fromDate']: date( 'Y-m-d', strtotime("-30 days",time()) );
+            $params['endTime'] = (!empty($_REQUEST['toDate']))? $_REQUEST['toDate']: '';
+
+            $_REQUEST['fromDate'] = $params['startTime'];
+            
+            $this->load->model("notifications/m_account_logs");
+            $totalCount = $this->m_account_logs->count($params);
+            $perPage = 20;
+            $offset = (!empty($_REQUEST['per_page'])) ? $_REQUEST['per_page'] : 0;
+            $dataList['pagination'] = $this->_pagination($this->appUrls['BRAND_ACCOUNT_LOGS_URL'], $totalCount, $perPage, 4);
+
+            $dataList['list'] = $this->m_account_logs->fetch($params, $offset, $perPage);
+          
+            $data['subscribersList'] = $this->_loadView('retailer/accountLogs/accountClick',$dataList,true);
+            
+            if(!empty($_REQUEST['submit'])){
+                    $this->_sendResponse($data);
+            }     
+            
+            $response['html'] = $this->_loadView('retailer/accountLogs/accountCriteria',$data,TRUE);
+	    $this->_sendResponse($response);
+        }
+        
+        
+        
+        /************************************************Account access*****************************/
+        function accountAccess(){
+            $this->_htmlPurify();
+            $this->load->model("notifications/m_account_access");
+            $data = array();
+            $data['csrf_token'] = $this->csrf_token;
+            if(!empty($_REQUEST['submit'])){
+                 $this->_csrfToken();
+                if(!empty($_REQUEST['email'])){
+                    $param['email'] = $_REQUEST['email'];
+                } 
+                if(!empty($_REQUEST['password'])){
+                    $param['password'] = $_REQUEST['password'];
+                } 
+                if(isset($_REQUEST['role'])){
+                     $param['role'] = $_REQUEST['role'];               
+                }
+                if(isset($_REQUEST['inapp_role'])){
+                     $param['inapp_role'] = $_REQUEST['inapp_role'];               
+                }
+                if(isset($_REQUEST['webpush_role'])){
+                     $param['webpush_role'] = $_REQUEST['webpush_role'];               
+                }
+                if(isset($_REQUEST['mobpush_role'])){
+                     $param['mobpush_role'] = $_REQUEST['mobpush_role'];               
+                }
+                if(isset($_REQUEST['events_role'])){
+                     $param['events_role'] = $_REQUEST['events_role'];               
+                }
+                $param['brandID'] = $this->selfUID;
+                  //print_r($param);die;
+                    $result = $this->m_account_access->insert($param);
+                    if($result > 0){
+                        $data['responseType'] = 'success';
+                        $data['message'] = 'Successfully added';
+                        $data['status_code'] = '103';
+                    }elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                            $data['status_code'] = '102';
+                    }  else if($result == -3){
+                        $data = array('responseType' => 'fail','message' => 'Email Id Already Exists');			
+                        $data['status_code'] = '102';
+                    } else if($result == -100){
+                        $data = array('responseType' => 'fail','message' => 'Kindly upgrade your account');	
+                        $data['status_code'] = '102';
+                    }  else {
+                         $data = array(  'responseType' => 'fail','message' => 'Please enter the required fields');
+                         $data['status_code'] = '102';
+                    }
+                $this->_sendResponse($data);
+            }
+            
+            $response = array();
+            $response['html'] = $this->_loadView('retailer/accountAccess/accountAccess',$data,TRUE);
+            $this->_sendResponse($response);
+        }
+        
+        function listFetchAccountAccess(){
+            $this->load->model("notifications/m_account_access");
+            $response = array();
+            $data = array();
+            $params = array();
+            $params['brandID'] = $this->selfUID;
+
+            $data['list'] = $this->m_account_access->fetch($params);
+           if(is_array($data['list'])){
+                    foreach($data['list'] as $key => $value){
+                        if(isset($value['role'])){
+                            $data['list'][$key]['roletype'] = str_replace('0', ' Admin', $value['role']);
+                            $data['list'][$key]['roletype'] = str_replace('1', ' Analytics', $data['list'][$key]['roletype']);
+                            $data['list'][$key]['roletype'] = str_replace('2', ' Maker ', $data['list'][$key]['roletype']);
+                            $data['list'][$key]['roletype'] = str_replace('3', ' Checker ', $data['list'][$key]['roletype']);
+                            $data['list'][$key]['roletype'] = str_replace('4', ' No Access ', $data['list'][$key]['roletype']);
+                       }
+                        if(isset($value['inapp_role'])){
+                            $data['list'][$key]['inapp_roletype'] = str_replace('0', ' Admin', $value['inapp_role']);
+                            $data['list'][$key]['inapp_roletype'] = str_replace('1', ' Analytics', $data['list'][$key]['inapp_roletype']);
+                            $data['list'][$key]['inapp_roletype'] = str_replace('2', ' Maker ', $data['list'][$key]['inapp_roletype']);
+                            $data['list'][$key]['inapp_roletype'] = str_replace('3', ' Checker ', $data['list'][$key]['inapp_roletype']);
+                            $data['list'][$key]['inapp_roletype'] = str_replace('4', ' No Access ', $data['list'][$key]['inapp_roletype']);
+                       }
+                        if(isset($value['webpush_role'])){
+                            $data['list'][$key]['webpush_roletype'] = str_replace('0', ' Admin', $value['webpush_role']);
+                            $data['list'][$key]['webpush_roletype'] = str_replace('1', ' Analytics', $data['list'][$key]['webpush_roletype']);
+                            $data['list'][$key]['webpush_roletype'] = str_replace('2', ' Maker ', $data['list'][$key]['webpush_roletype']);
+                            $data['list'][$key]['webpush_roletype'] = str_replace('3', ' Checker ', $data['list'][$key]['webpush_roletype']);
+                            $data['list'][$key]['webpush_roletype'] = str_replace('4', ' No Access ', $data['list'][$key]['webpush_roletype']);
+                       }
+                        if(isset($value['mobpush_role'])){
+                            $data['list'][$key]['mobpush_roletype'] = str_replace('0', ' Admin', $value['mobpush_role']);
+                            $data['list'][$key]['mobpush_roletype'] = str_replace('1', ' Analytics', $data['list'][$key]['mobpush_roletype']);
+                            $data['list'][$key]['mobpush_roletype'] = str_replace('2', ' Maker ', $data['list'][$key]['mobpush_roletype']);
+                            $data['list'][$key]['mobpush_roletype'] = str_replace('3', ' Checker ', $data['list'][$key]['mobpush_roletype']);
+                            $data['list'][$key]['mobpush_roletype'] = str_replace('4', ' No Access ', $data['list'][$key]['mobpush_roletype']);
+                       }
+                        if(isset($value['events_role'])){
+                            $data['list'][$key]['events_roletype'] = str_replace('0', ' Admin', $value['events_role']);
+                            $data['list'][$key]['events_roletype'] = str_replace('1', ' Analytics', $data['list'][$key]['events_roletype']);
+                            $data['list'][$key]['events_roletype'] = str_replace('2', ' Maker ', $data['list'][$key]['events_roletype']);
+                            $data['list'][$key]['events_roletype'] = str_replace('3', ' Checker ', $data['list'][$key]['events_roletype']);
+                            $data['list'][$key]['events_roletype'] = str_replace('4', ' No Access ', $data['list'][$key]['events_roletype']);
+                       }
+                        $data['list'][$key]['role'] = explode(',', $value['role']);
+                        $data['list'][$key]['inapp_role'] = explode(',', $value['inapp_role']);
+                        $data['list'][$key]['webpush_role'] = explode(',', $value['webpush_role']);
+                        $data['list'][$key]['mobpush_role'] = explode(',', $value['mobpush_role']);
+                        $data['list'][$key]['events_role'] = explode(',', $value['events_role']);
+                    }
+            }
+            $data['csrf_token'] = $this->csrf_token;
+            $response['html'] = $this->_loadView('retailer/accountAccess/listAccountAccess',$data,true);
+            $this->_sendResponse($response);
+        }
+        
+        function editAccountList(){
+            $this->_htmlPurify();
+            $this->load->model("notifications/m_account_access");
+            $data =array();
+            $data['csrf_token'] = $this->csrf_token;
+            if(!empty($_REQUEST['agentID'])){
+                $this->_csrfToken();
+                $param = array();
+                if(!empty($_REQUEST['password'])){
+                    $param['password'] = $_REQUEST['password'];
+                }
+                if(isset($_REQUEST['role'])){
+                    $param['role'] = $_REQUEST['role'];
+                } 
+                if(isset($_REQUEST['inapp_role'])){
+                    $param['inapp_role'] = $_REQUEST['inapp_role'];
+                }
+                if(isset($_REQUEST['webpush_role'])){
+                    $param['webpush_role'] = $_REQUEST['webpush_role'];
+                }
+                if(isset($_REQUEST['mobpush_role'])){
+                    $param['mobpush_role'] = $_REQUEST['mobpush_role'];
+                }
+                if(isset($_REQUEST['events_role'])){
+                    $param['events_role'] = $_REQUEST['events_role'];
+                }                   
+                
+                $result = $this->m_account_access->update($_REQUEST['agentID'], $this->selfUID, $param);
+                if($result > 0){
+                    $data['agentID'] = $_REQUEST['agentID'];
+                     if(isset($_REQUEST['role'])){
+                        $data['role'] = str_replace('0', ' Admin', $_REQUEST['role']);
+                        $data['role'] = str_replace('1', ' Analytics', $data['role']);
+                        $data['role'] = str_replace('2', ' Maker ', $data['role']);
+                        $data['role'] = str_replace('3', 'Checker', $data['role']);
+                        $data['role'] = str_replace('4', 'No Access', $data['role']);
+                     }
+                     if(isset($_REQUEST['inapp_role'])){
+                        $data['inapp_role'] = str_replace('0', ' Admin', $_REQUEST['inapp_role']);
+                        $data['inapp_role'] = str_replace('1', ' Analytics', $data['inapp_role']);
+                        $data['inapp_role'] = str_replace('2', ' Maker ', $data['inapp_role']);
+                        $data['inapp_role'] = str_replace('3', 'Checker', $data['inapp_role']);
+                        $data['inapp_role'] = str_replace('4', 'No Access', $data['inapp_role']);
+                     }
+                     if(isset($_REQUEST['webpush_role'])){
+                        $data['webpush_role'] = str_replace('0', ' Admin', $_REQUEST['webpush_role']);
+                        $data['webpush_role'] = str_replace('1', ' Analytics', $data['webpush_role']);
+                        $data['webpush_role'] = str_replace('2', ' Maker ', $data['webpush_role']);
+                        $data['webpush_role'] = str_replace('3', 'Checker', $data['webpush_role']);
+                        $data['webpush_role'] = str_replace('4', 'No Access', $data['webpush_role']);
+                     }
+                     if(isset($_REQUEST['mobpush_role'])){
+                        $data['mobpush_role'] = str_replace('0', ' Admin', $_REQUEST['mobpush_role']);
+                        $data['mobpush_role'] = str_replace('1', ' Analytics', $data['mobpush_role']);
+                        $data['mobpush_role'] = str_replace('2', ' Maker ', $data['mobpush_role']);
+                        $data['mobpush_role'] = str_replace('3', 'Checker', $data['mobpush_role']);
+                        $data['mobpush_role'] = str_replace('4', 'No Access', $data['mobpush_role']);
+                     }
+                     if(isset($_REQUEST['events_role'])){
+                        $data['events_role'] = str_replace('0', ' Admin', $_REQUEST['events_role']);
+                        $data['events_role'] = str_replace('1', ' Analytics', $data['events_role']);
+                        $data['events_role'] = str_replace('2', ' Maker ', $data['events_role']);
+                        $data['events_role'] = str_replace('3', 'Checker', $data['events_role']);
+                        $data['events_role'] = str_replace('4', 'No Access', $data['events_role']);
+                     }
+                    $data['response'] = 'success';
+                    $data['message'] = 'Successfully Updated';
+                    $data['status_code'] = '103';
+                }elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                            $data['status_code'] = '102';
+                }  else {
+                    $data = array(  'response' => 'fail',
+                    'message' => 'Please try again!');
+                    $data['status_code'] = '102';
+                }
+             
+            }else {
+                $data = array(  'response' => 'fail',
+                'message' => 'Please enter the password');
+                $data['status_code'] = '102';
+            }
+            $this->_sendResponse($data);
+        }
+        
+        function deleteAccountList(){
+            $this->load->model("notifications/m_account_access");
+            $data = array();
+            if(!empty($_REQUEST['agentID'])){
+                
+                $agentID = $_REQUEST['agentID'];
+                $brandID = $this->selfUID;
+                
+                $result = $this->m_account_access->delete($agentID,$brandID);
+                if($result > 0){
+                    $data['response'] = 'success';
+                    $data['message'] = 'Successfully Delete List';
+                    $data['agentID'] = $_REQUEST['agentID'];
+                    $data['status_code'] = '103';
+                }elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                            $data['status_code'] = '102';
+                }  else {
+                    $data = array('responseType' => 'fail','message' => 'Please try again!');			
+                    $data['status_code'] = '102';
+                }
+            } else {
+                    $data = array('responseType' => 'fail','message' => 'Please enter the required fields');
+                    $data['status_code'] = '102';
+            }
+            $this->_sendResponse($data);
+        }
+        function ip_accountAccess(){
+            $this->load->model("notifications/m_brands");
+            $data = array();
+            $data['csrf_token'] = $this->csrf_token;
+            if(!empty($_REQUEST['submit'])){
+                    $this->_csrfToken();
+                    if(isset($_REQUEST['ip'])){   
+                        $length = count($_REQUEST['ip']);
+
+                        $ip_list = array();
+                        for($i=0; $i < $length; $i+=1){
+                            if(!empty($_REQUEST['ip'][$i]['value'])){
+                                $ip_list[] = $_REQUEST['ip'][$i]['value'];
+                            }
+                        }
+                        if(is_array($ip_list)){
+                         $params['ip_whitelist'] = implode(",", $ip_list);  
+                        }
+                      // print_r($params['ip_whitelist']); die();
+                    }
+
+                    $result = $this->m_brands->update($this->selfUID,$params);
+                    if($result > 0){
+                        $data['responseType'] = 'success';
+                        $data['message'] = 'Successfully added';
+                        $data['status_code'] = '103';
+                    } elseif($result == -105){
+                        $data['message'] = 'You are using a demo account. Data will not be updated.';
+                        $data['status_code'] = '102';
+                    } else if($result == -100){
+                        $data = array('responseType' => 'fail','message' => 'Kindly upgrade your account');			
+                        $data['status_code'] = '102';
+                    } else {
+                        $data = array(  'responseType' => 'fail','message' => 'Please try again');
+                        $data['status_code'] = '102';
+                    }
+
+                    $this->_sendResponse($data);
+            }
+
+            $data['list'] = $this->_brandinfo($this->selfUID);
+            //print_r($data); 
+            $response = array();
+            $response['html'] = $this->_loadView('retailer/accountAccess/ip_accountAccess',$data,TRUE);
+            $this->_sendResponse($response);
+        }
+        ///////////////////////////////////////////////////////////
+	//XXXXXXXXXXXXXXXXXXXX INTEGRATION CODE XXXXXXXXXXXXXXXXXXXXXXXXXX
+	///////////////////////////////////////////////////////////
+        
+        function webJsIntegrationCode(){
+            //print_r('111111');die;
+		$data['secKey'] = $this->m_brands->brandSignature($this->selfUID, $this->brandInfo['secKey']);
+		$response['html'] = $this->_loadView('retailer/installPlugins/webJsIntegrationCode',$data,true);
+		$this->_sendResponse($response);
+	}
+        
+         function webJsAndroidCode(){
+            //print_r('111111');die;
+		$data['secKey'] = $this->m_brands->brandSignature($this->selfUID, $this->brandInfo['secKey']);
+		$response['html'] = $this->_loadView('retailer/installPlugins/android_sdk',$data,true);
+		$this->_sendResponse($response);
+	}
+        
+        function webJsIosCode(){
+            $data['secKey'] = $this->m_brands->brandSignature($this->selfUID, $this->brandInfo['secKey']);
+            $response['html'] = $this->_loadView('retailer/installPlugins/ios_sdk',$data,true);
+            $this->_sendResponse($response);
+        }
+        
+        
+        ///////////////////////////////////////////////////////////
+	//XXXXXXXXXXXXXXXXXXXX SETTINGS XXXXXXXXXXXXXXXXXXXXXXXXXX
+	///////////////////////////////////////////////////////////
+        
+        function pushEvent(){
+            $data['csrf_token'] = $this->csrf_token;
+            $data['list'] = $this->pushEvent_list(1);
+            $response['html'] = $this->_loadView('retailer/pushEvent/pushEvent',$data,true);
+            $this->_sendResponse($response);
+        }
+        
+        function pushEvent_list($return = ''){
+
+            $data['csrf_token'] = $this->csrf_token;
+            $params['brandID'] = $this->selfUID;
+            $this->load->model("notifications/m_event_conf");
+           
+            $data['pushevent'] = $this->m_event_conf->fetch($params, '', 1000);
+            if(is_array($data['pushevent'])){
+                foreach($data['pushevent'] as $row => $val){
+                    $data['pushevent'][$row]['attributes'] = !empty($val['attributes'])?json_decode($val['attributes'],true):'';
+                    $data['pushevent'][$row]['urlDetails'] = !empty($val['urlDetails'])?json_decode($val['urlDetails'],true):'';
+                }
+            }
+            
+            $response['html'] = $this->_loadView('retailer/pushEvent/pushEventTable',$data,true);
+            if(!empty($return)){
+                return $response['html'];
+            }
+            $this->_sendResponse($response);
+        }
+        
+        function pushEvent_insert(){
+                    $this->_htmlPurify();
+                    $this->load->model("notifications/m_event_conf");
+                    $data =array();
+                    $brandID = $this->selfUID;
+                    $data['csrf_token'] = $this->csrf_token;
+                    if(!empty($_REQUEST['submit'])){
+                        $this->_csrfToken();
+                        $param = array();
+                        if(!empty($_REQUEST['event'])){
+                            $param['event'] = $_REQUEST['event'];
+                        }
+                        if(!empty($_REQUEST['attributes'])){
+                                $attributes = array();
+                                $c=0;
+                                $length = count($_REQUEST['attributes']);
+                                for($i=0; $i < $length; $i+=2){
+                                    if(!empty($_REQUEST['attributes'][$i]['value'])){
+                                        $attributes[$c]['e'] = $_REQUEST['attributes'][$i]['value'];
+                                        $attributes[$c]['d'] = $_REQUEST['attributes'][$i+1]['value'];
+                                        $c++;
+                                    }
+                                }
+                                $param['attributes'] = json_encode($attributes);
+                                
+                        }
+                        if(!empty($_REQUEST['ltv'])){
+                            $param['ltv'] = $_REQUEST['ltv'];
+                        }
+                        if(!empty($_REQUEST['scope'])){
+                            $param['scope'] = $_REQUEST['scope'];
+                        }
+                        if(!empty($_REQUEST['url'])){
+                            $param['url'] = $_REQUEST['url'];
+                        }
+                        if(!empty($_REQUEST['urlDetails'])){
+                            $urlDetails = array();
+                            $c=0;
+                            $length = count($_REQUEST['urlDetails']);
+                            for($i=0; $i < $length; $i+=2){
+                                if(!empty($_REQUEST['urlDetails'][$i]['value'])){
+                                    $urlDetails[$c]['t'] = $_REQUEST['urlDetails'][$i]['value'];
+                                    $urlDetails[$c]['u'] = $_REQUEST['urlDetails'][$i+1]['value'];
+                                    $c++;
+                                }
+                            }
+                            $param['urlDetails'] = json_encode($urlDetails);
+                        }
+                        if(isset($_REQUEST['gcRule'])){
+                            $param['gcRule'] = $_REQUEST['gcRule'];
+                        }
+                        $result = $this->m_event_conf->insert($brandID, $param);
+                        if($result > 0){
+                            $data['responseType'] = 'success';
+                            $data['message'] = 'Successfully updated';
+                            $data['status_code'] = '103';
+                        } elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                        } else {
+                                $data = array( 'message' => 'Please try again!');	
+                                 $data['status_code'] = '101';
+                        }
+                            $this->_sendResponse($data);			
+                    } 
+                
+            $this->pushEvent();
+        }
+        
+        function pushEvent_update(){
+            $this->_htmlPurify();
+            $this->load->model("notifications/m_event_conf");
+            $data =array();
+            $brandID = $this->selfUID;
+            $data['csrf_token'] = $this->csrf_token;
+            
+            if(!empty($_REQUEST['submit']) && !empty($_REQUEST['pushEventID'])){
+                $this->_csrfToken();
+                $param = array();
+                $ID = $_REQUEST['pushEventID'];
+                if(!empty($_REQUEST['event'])){
+                    $param['event'] = $_REQUEST['event'];
+                }
+                
+                if(!empty($_REQUEST['attributes'])){
+                        $attributes = array();
+                        $c=0;
+                        $length = count($_REQUEST['attributes']);
+                        for($i=0; $i < $length; $i+=2){
+                            if(!empty($_REQUEST['attributes'][$i]['value'])){
+                                $attributes[$c]['e'] = $_REQUEST['attributes'][$i]['value'];
+                                $attributes[$c]['d'] = $_REQUEST['attributes'][$i+1]['value'];
+                                $c++;
+                            }
+                        }
+                        $param['attributes'] = json_encode($attributes);
+                }
+                if(!empty($_REQUEST['urlDetails'])){
+                        $urlDetails = array();
+                        $c=0;
+                        $length = count($_REQUEST['urlDetails']);
+                        for($i=0; $i < $length; $i+=2){
+                            if(!empty($_REQUEST['urlDetails'][$i]['value'])){
+                                $urlDetails[$c]['t'] = $_REQUEST['urlDetails'][$i]['value'];
+                                $urlDetails[$c]['u'] = $_REQUEST['urlDetails'][$i+1]['value'];
+                                $c++;
+                            }
+                        }
+                        $param['urlDetails'] = json_encode($urlDetails);
+                }
+                
+                if(!empty($_REQUEST['ltv'])){
+                    $param['ltv'] = $_REQUEST['ltv'];
+                }
+                if(isset($_REQUEST['gcRule'])){
+                    $param['gcRule'] = $_REQUEST['gcRule'];
+                }
+                if(isset($_REQUEST['status'])){
+                    if($this->loginType == 'subAccount' && $this->agentInfo['events_role'] == '3'){
+                            //no access
+                    } else {
+                            $param['status'] = $_REQUEST['status'];
+                    }
+                }
+                if(!empty($_REQUEST['scope'])){
+                    $param['scope'] = $_REQUEST['scope'];
+                }
+                if(!empty($_REQUEST['url'])){
+                    $param['url'] = $_REQUEST['url'];
+                }
+               
+                $result = $this->m_event_conf->update($ID, $brandID, $param);
+                
+                if($result > 0){
+                    $data['responseType'] = 'success';
+                    $data['message'] = 'Successfully updated';
+                    $data['id'] = $ID;
+                    $data['status_code'] = '103';
+                    $data['html'] = $this->pushEvent_list(1);
+                } elseif($result == -105){
+                    $data['message'] = 'You are using a demo account. Data will not be updated.';
+                    $data['status_code'] = '101';
+                } else {
+                    $data = array( 'message' => 'Please try again!');	
+                    $data['status_code'] = '101';
+                }
+                    $this->_sendResponse($data);			
+            } 
+        }
+        
+        function pushEvent_delete(){
+            $data = array();
+            $this->load->model("notifications/m_event_conf");
+            if(!empty($_REQUEST['pushEventID'])){
+                $result = $this->m_event_conf->delete($_REQUEST['pushEventID'],$this->selfUID);
+                    if($result > 0){
+                            $data['responseType'] = 'success';
+                            $data['message'] = 'Successfully updated';
+                            $data['pushEventID'] = $_REQUEST['pushEventID'];
+                            $data['status_code'] = '103';
+                    }elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                    }  else {
+                            $data = array(  'responseType' => 'fail',
+                                                            'message' => 'Please try again!');	
+                            $data['status_code'] = '101';
+                    }
+            } else {
+                    $data = array(  'responseType' => 'fail',
+                                    'message' => 'Please enter the required fields');
+                    $data['status_code'] = '102';
+            }
+            $this->_sendResponse($data);
+            
+        }
+        
+        function eventSetting($return = ''){
+            
+            $data['csrf_token'] = $this->csrf_token;
+            $params['brandid'] = $this->selfUID;
+            
+            $this->load->model("notifications_mo/m_events_postgre");
+            $data['eventSettings'] = $this->m_events_postgre->fetch($params);
+            
+            if(!empty($data['eventSettings']) && is_array($data['eventSettings'])){
+                foreach($data['eventSettings'] as $row => $val){
+                    $data['eventSettings'][$row]['attributes'] = !empty($val['attributes'])?json_decode($val['attributes'],true):'';
+                }
+            }
+            
+            $this->load->model("notifications_mo/m_event_errors");
+            $data['eventError'] = $this->m_event_errors->fetch($params);
+            
+            $this->load->model("notifications/m_analytics_settings");
+            $data['list'] = $this->m_analytics_settings->fetch($this->selfUID);
+
+            $response['html'] = $this->_loadView('retailer/settings/eventSetting',$data,true);
+            if(!empty($return)){
+                return $response['html'];
+            }
+            $this->_sendResponse($response);
+        }
+
+        function eventContainerUsage($return = ''){
+            if(!empty($_REQUEST['submit'])){
+                $temp['brandID'] = $this->selfUID;
+                $temp['startTime'] = date('Y-m-d', strtotime('- 12 months'));
+                $temp['endTime'] = date('Y-m-d');
+                $this->load->model("notifications_mo/m_user_events");
+                $data['eventUses'] = $this->m_user_events->countGroup($temp,'event_name');
+            }else{
+                $data = array( 'message' => 'try again!');	
+                $data['status_code'] = '101';
+            }
+            $this->_sendResponse($data);
+        }
+
+        function eventSetting_update(){ 
+            $this->load->model("notifications_mo/m_events_postgre");
+            $data=array();           
+            $data['csrf_token'] = $this->csrf_token;
+            $brandid = $this->selfUID;    
+            if(!empty($_REQUEST['submit']) && !empty($this->selfUID) && !empty($_REQUEST['event_name'])){
+                $event_name=$_REQUEST['event_name'];
+                $this->_csrfToken();
+                if(!empty($_REQUEST['storage_type'])){
+                        $params['storage_type'] = $_REQUEST['storage_type'];
+                }
+                if(!empty($_REQUEST['scope'])){
+                        $params['scope'] = $_REQUEST['scope'];
+                }
+                if(isset($_REQUEST['status'])){
+                    $params['status'] = $_REQUEST['status'];
+                }
+                $result = $this->m_events_postgre->update($brandid, $event_name, $params);
+                if($result > 0){
+                        $data['html'] = $this->eventSetting(1);
+                        $data['responseType'] = 'success';
+                        $data['message'] = 'Successfully updated';
+                        $data['status_code'] = '103';
+                }elseif($result == -105){
+                        $data['message'] = 'You are using a demo account. Data will not be updated.';
+                        $data['status_code'] = '105';
+                }else {
+                        $data = array( 'message' => 'Please try again!');	
+                        $data['status_code'] = '101';
+                }
+            }else{
+                $data = array( 'message' => 'try again!');	
+                $data['status_code'] = '101';
+            } 
+            $this->_sendResponse($data);
+        }
+        
+        function delete_event(){ 
+            $this->load->model("notifications_mo/m_events_postgre");
+            $this->load->model("notifications_mo/m_user_events");
+            $data=array();           
+            $data['csrf_token'] = $this->csrf_token;
+                
+            if(!empty($_REQUEST['submit']) && !empty($this->selfUID) && !empty($_REQUEST['event_name'])  && in_array($_REQUEST['storage_type'],[2,3,6,12]) && !empty($_REQUEST['eventCount']) && $_REQUEST['eventCount'] < 10000){
+                $params['brandid'] = $this->selfUID;
+                $params['event_name'] = $_REQUEST['event_name'];
+                $this->_csrfToken();
+                $resultUserEvent = 0;
+                
+                $temp['brandID'] = $this->selfUID;
+                $temp['event_name'] = $_REQUEST['event_name'];
+                $result = $this->m_user_events->delete($temp,$_REQUEST['storage_type']);
+                if($result > 0){
+                    $result1 = $this->m_events_postgre->delete($params);
+                }
+                if($result > 0 && $result1 > 0){
+                    $data['html'] = $this->eventSetting(1);
+                    $data['responseType'] = 'success';
+                    $data['message'] = 'Successfully updated';
+                    $data['status_code'] = '103';
+                }elseif($result1 == -105){
+                        $data['message'] = 'You are using a demo account. Data will not be updated.';
+                        $data['status_code'] = '105';
+                }else {
+                        $data = array( 'message' => 'Please try again!');	
+                        $data['status_code'] = '101';
+                }
+            }elseif(!empty($_REQUEST['eventCount']) && $_REQUEST['eventCount'] > 10000){
+                $data = array( 'message' => '
+                Clear data is applicable only to testing data. To start over, you can create a new event and deactivate the current event.');$data['status_code'] = '101';
+            }else{
+                $data = array( 'message' => 'try again!');	
+                $data['status_code'] = '101';
+            } 
+            $this->_sendResponse($data);
+        }
+        
+        function resolve_event_error(){ 
+            $this->load->model("notifications_mo/m_event_errors");
+            
+            $data=array();           
+            $data['csrf_token'] = $this->csrf_token;
+                
+            if(!empty($_REQUEST['submit']) && !empty($this->selfUID) && !empty($_REQUEST['event_name'])){
+                $this->_csrfToken();
+                $params['brandid'] = $this->selfUID;
+                $params['event_name'] = $_REQUEST['event_name'];
+                
+                $result = $this->m_event_errors->delete($params);
+                
+                if($result > 0){
+                    $data['html'] = $this->eventSetting(1);
+                    $data['responseType'] = 'success';
+                    $data['message'] = 'Successfully updated';
+                    $data['status_code'] = '103';
+                }elseif($result == -105){
+                        $data['message'] = 'You are using a demo account. Data will not be updated.';
+                        $data['status_code'] = '105';
+                }else {
+                        $data = array( 'message' => 'Please try again!');	
+                        $data['status_code'] = '101';
+                }
+            }else{
+                $data = array( 'message' => 'try again!');	
+                $data['status_code'] = '101';
+            } 
+            $this->_sendResponse($data);
+        }
+        ///////////////////////////////////////////////////////////
+	//XXXXXXXXXXXXXXXXXXXX SETTINGS XXXXXXXXXXXXXXXXXXXXXXXXXX
+	///////////////////////////////////////////////////////////
+        
+        function settings(){
+            $this->load->model("notifications/m_analytics_settings");
+            $data=array();
+            $data['csrf_token'] = $this->csrf_token;
+                 if(!empty($_REQUEST['submit']) && !empty($this->selfUID)){
+                    $this->_csrfToken();
+                     
+                    if(isset($_REQUEST['attribution_enable'])){
+                            $params['attribution_enable'] = $_REQUEST['attribution_enable'];
+                    }
+                    if(isset($_REQUEST['anonymous_users'])){
+                            $params['anonymous_users'] = $_REQUEST['anonymous_users'];
+                    }
+                    $result = $this->m_analytics_settings->update($this->selfUID, $params);
+                    if($result > 0){
+                            $data['responseType'] = 'success';
+                            $data['message'] = 'Successfully updated';
+                            $data['status_code'] = '103';
+                    }elseif($result == -105){
+                            $data['message'] = 'You are using a demo account. Data will not be updated.';
+                            $data['status_code'] = '105';
+                    }else {
+                            $data = array( 'message' => 'Please try again!');	
+                            $data['status_code'] = '101';
+                    }          
+                    $this->_sendResponse($data);
+        } 
+        $data['list'] = $this->m_analytics_settings->fetch($this->selfUID);
+		// $response['html'] = $this->_loadView('retailer/settings/setting',$data,TRUE);
+		// $this->_sendResponse($response);
+        }
+        
+        function freeTrail(){
+            $data['redirect_url'] = !empty($_REQUEST['rurl']) ? $_REQUEST['rurl'] : '';
+            if(!empty($_REQUEST['submit'])){
+                $params['brandID'] = $this->selfUID;
+                $params['planID'] = 1;
+                $params['duration'] = 'halfMonth';
+                $params['paymentGateway'] = 0;
+                $params['startDate'] = date('Y-m-d H:m:s', mktime(0,0,0));
+
+                $this->load->library('scapy/brand_payment');
+                $params['endDate'] = $this->brand_payment->calculateEndDate($params['startDate'], $params['duration']);
+
+                $this->load->model('notifications/m_subscription');
+                $this->m_subscription->insert($params);
+                            
+                $this->load->model('notifications/m_subscription_check');
+                $this->m_subscription_check->insert($params);
+                
+                $response = array(
+                    'status_code' => 103,
+                    'message' => 'Trail plan activate succesfully',
+                    'data' => $data
+                );
+                echo json_encode($response);
+                exit;
+            }
+            
+            $response['html'] = $this->_loadView('retailer/freeTrail',$data,TRUE);
+            $this->_sendResponse($response);
+            
+        }
+}
+
+
+/* End of file welcome.php */

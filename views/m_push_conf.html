@@ -1,0 +1,484 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+/**
+ * @author Aman Gupta
+ * @copyright May 2014
+ */
+
+class M_event_conf extends CI_Model {
+    // constructor 	
+    function __construct() {
+	    parent::__construct();
+        
+            $this->table = "event_conf";
+
+            $this->load->driver('cache');
+    }
+    
+    //creates a new object.
+    function insert($brandID='',$params='') {
+    	if(!empty($brandID) && !empty($params)){
+                $data = array();
+                if($this->_demo_account($brandID)){
+                    return -105;
+                }
+                
+                $account_logs = $this->_account_logs($brandID, '', $params, 'insert');
+                
+    		$data['brandID'] = htmlspecialchars($brandID);
+                
+    		if(isset($params['status'])){
+                        $data['status'] = htmlspecialchars($params['status']);
+                }
+                if(!empty($params['event'])){
+                        $data['event'] = htmlspecialchars($params['event']);
+                }
+                if(!empty($params['attributes'])){
+                        $data['attributes'] = htmlspecialchars($params['attributes']);
+                }
+                if(!empty($params['urlDetails'])){
+                        $data['urlDetails'] = htmlspecialchars($params['urlDetails']);
+                }
+                if(isset($params['ltv'])){
+                        $data['ltv'] = htmlspecialchars($params['ltv']);
+                }
+                if(isset($params['scope'])){
+                        $data['scope'] = htmlspecialchars($params['scope']);
+                }
+                if(!empty($params['url'])){
+                        $data['url'] = htmlspecialchars($params['url']);
+                }
+                if(isset($params['gcRule'])){
+                        $data['gcRule'] = htmlspecialchars($params['gcRule']);
+                }
+                
+                //load database
+                $this->DB = $this->load->database('notifications',TRUE);
+                if(!is_object($this->DB->conn_id)){
+                    return 0;
+                }
+            
+                $res = $this->DB->insert($this->table, $data);
+    		if($res){
+    			$Id = $this->DB->insert_id();
+    			$return = $Id;
+    		}else{
+    			$return = -2;
+    		}
+                
+                //close database connection
+                $this->DB->close();
+
+                if($return > 0){
+                        $this->memSave($brandID);
+                        $this->_add_account_logs($brandID, $account_logs);
+                }
+                
+                return $return;
+    	}else{
+    		return -3;
+    	}
+    }
+  	
+    //update records    
+    function update($Id = '', $brandID = '', $params = '') {	
+            if(!empty($Id) && !empty($brandID)  && is_array($params)){
+                if($this->_demo_account($brandID)){
+                    return -105;
+                }
+
+                $account_logs = $this->_account_logs($brandID, $Id, $params, 'update');
+                
+                $Id = htmlspecialchars($Id);
+                $brandID = htmlspecialchars($brandID);
+                
+                $data = array();
+    		    if(isset($params['status'])){
+                        $data['status'] = htmlspecialchars($params['status']);
+                }
+                if(!empty($params['event'])){
+                        $data['event'] = htmlspecialchars($params['event']);
+                }
+                if(isset($params['attributes'])){
+                        $data['attributes'] = htmlspecialchars($params['attributes']);
+                }
+                if(isset($params['urlDetails'])){
+                        $data['urlDetails'] = htmlspecialchars($params['urlDetails']);
+                }
+                if(isset($params['ltv'])){
+                        $data['ltv'] = htmlspecialchars($params['ltv']);
+                }
+                if(!empty($params['scope'])){
+                        $data['scope'] = htmlspecialchars($params['scope']);
+                }
+                if(!empty($params['url'])){
+                        $data['url'] = htmlspecialchars($params['url']);
+                }
+                if(isset($params['gcRule'])){
+                        $data['gcRule'] = htmlspecialchars($params['gcRule']);
+                }
+                
+                // print_r($data);die;
+                $this->DB = $this->load->database('notifications',TRUE);
+                if(!is_object($this->DB->conn_id)){
+                    return 0;
+                }
+
+                $this->DB->where('id', $Id);
+                $this->DB->where('brandID', $brandID);
+
+                $res = $this->DB->update($this->table, $data);
+                if ($res) {
+                        $return = 1;
+                } else {
+                        $return = -1;
+                }
+
+                //close database connection
+                $this->DB->close();
+
+                if($return > 0){
+                    if(!empty($params['scope']) && !empty($params['event'])){
+                        $this->load->model("notifications_mo/m_events_postgre");
+                        $brandid = $brandID;
+                        $event_name = $params['event'];
+                        $temp['scope'] = $params['scope'];
+                        $this->m_events_postgre->update($brandid, $event_name, $temp);      
+                    }
+                    $this->memSave($brandID);
+                    $this->_add_account_logs($brandID, $account_logs);
+                }
+
+                return $return;
+            } else{
+                return -2;
+            }
+    }   
+	   
+    function delete($Id = '', $brandID = '') {
+    	if(!empty($Id) && !empty($brandID)){
+                if($this->_demo_account($brandID)){
+                    return -105;
+                }        
+                
+                $account_logs = $this->_account_logs($brandID, $Id, '', 'delete'); 
+                
+                $Id = htmlspecialchars($Id);
+                $brandID = htmlspecialchars($brandID);
+                      
+                //load database
+                $this->DB = $this->load->database('notifications',TRUE);
+                
+                $this->DB->where('id', $Id);
+                $this->DB->where('brandID', $brandID);
+                $res = $this->DB->delete($this->table);
+                if ($res) {
+                        $return = 1;
+                } else {
+                        $return = -1;
+                } 
+                
+                //close database connection
+                $this->DB->close();
+
+                if($return > 0){
+                        $this->memSave($brandID);
+                        $this->_add_account_logs($brandID, $account_logs);
+                }
+
+                return $return;
+        } else {
+                return -2;
+        }        
+    }	
+     
+    //based on any of the following - notificationID, brandID
+    //params: amount, status, name, validity 
+    function fetch($params = '', $offset = '', $count = '', $cache = ''){
+    	if(is_array($params) && !empty($params)){
+                
+                if(!empty($cache) && !empty($params['brandID'])){
+                        $result = $this->memGet($params['brandID']);
+                        if(!empty($result)){
+                                return $result;
+                        }
+                }
+            
+                //load default values from config
+                $offset = (empty($offset))? $this->config->item('DEFAULT_OFFSET'): htmlspecialchars($offset);
+                $count = (empty($count))? $this->config->item('DEFAULT_FETCH_COUNT'): htmlspecialchars($count);   
+                
+                $where = $this->_getFetchWhere($params);
+               
+                if(empty($where['where'])){
+                    return -3;
+                }
+                
+                 //load database
+                $this->DB = $this->load->database('notifications',TRUE);
+                if(!is_object($this->DB->conn_id)){
+                    return 0;
+                }
+            
+                $query = "SELECT * FROM $this->table WHERE ". $where['where']." ORDER BY time DESC limit $offset, $count";
+
+                $res = $this->DB->query($query, $where['whereArray']);
+                if (is_object($res) && $res->num_rows) {
+                        $return = $res->result_array();
+                } elseif(is_object($res) && $res->num_rows == 0){
+                        $return = -1;
+                } else{
+                        $return = 0;
+                }
+                
+                //close database connection
+                $this->DB->close();
+                
+                if(is_array($return)){
+                    foreach ($return as $key => $value){
+                        if(!empty($value['event'])){
+                                $return[$key]['event'] = htmlspecialchars_decode($value['event']);
+                        }
+                        if(!empty($value['url'])){
+                                $return[$key]['url'] = htmlspecialchars_decode($value['url']);
+                        }
+                        if(!empty($value['attributes'])){
+                                $return[$key]['attributes'] = htmlspecialchars_decode($value['attributes']);
+                        }
+                        if(!empty($value['urlDetails'])){
+                                $return[$key]['urlDetails'] = htmlspecialchars_decode($value['urlDetails']);
+                        }
+                        if(!empty($value['gcRule'])){
+                                $return[$key]['gcRule'] = htmlspecialchars_decode($value['gcRule']);
+                        }
+                    }
+                }
+                return $return;
+    	} else{
+    		return -2;
+    	}
+    }    
+
+    function count($params = '') {
+    	if(is_array($params) && !empty($params)){
+                
+                $where = $this->_getFetchWhere($params);
+                if(empty($where['where'])){
+                    return -3;
+                }
+                
+                //load database
+                $this->DB = $this->load->database('notifications_read',TRUE);
+                if(!is_object($this->DB->conn_id)){
+                    return 0;
+                }
+                
+                $query = "SELECT count(1) as count FROM $this->table WHERE ".$where['where'];
+                $res = $this->DB->query($query, $where['whereArray']);
+	    	if ($res->num_rows) {
+	    		$res = $res->result();
+	    		$return = $res['0']->count;
+	    	} else {
+	    		$return = -1;
+	    	}
+                
+                //close database connection
+                $this->DB->close();
+
+                return $return;
+    	} else{
+    		return -2;		
+    	}
+    }   
+    
+    /*
+    * returns the where cluase used in fetch and count function
+    */
+    function _getFetchWhere($params = ''){
+            $data['where'] = '';
+            $data['whereArray'] = array();
+            if(!empty($params['brandID'])){
+                $data['where'] = "brandID = ?";
+                $data['whereArray'][] = htmlspecialchars($params['brandID']);
+            }
+            if(isset($params['status'])){
+                $data['where'] .= " AND status = ?";
+                $data['whereArray'][] = htmlspecialchars($params['status']);
+            }
+            if(isset($params['id'])){
+                $data['where'] .= " AND id = ?";
+                $data['whereArray'][] = htmlspecialchars($params['id']);
+            }
+            return $data;
+    }	
+	
+	//////////////////////////////////////////////
+	//XXXXXXXXXXXXXXX MEMCACHE XXXXXXXXXXXXXXX
+	//////////////////////////////////////////////
+	
+	function memSave($brandID = ''){
+		if($this->config->item('MEMCACHE') != 1){return false;	}
+		$params['brandID'] = $brandID;
+                $params['status'] = 1;
+                $result = $this->fetch($params);
+                $this->cache->memcached->delete('notifyanal_event_conf_'.$brandID);
+                $this->cache->memcached->save('notifyanal_event_conf_'.$brandID, $result, 86400);
+	}
+
+	function memGet($brandID = ''){
+                if($this->config->item('MEMCACHE') != 1){return false;	}
+		$data = $this->cache->memcached->get('notifyanal_event_conf_'.$brandID);
+		if(empty($data)){
+			$this->memSave($brandID);
+		}
+		return $data; 
+	}
+        
+        function _demo_account($brandID = ''){
+                $demo_id = $this->config->item('demo_account');
+                if($demo_id == $brandID){
+                    return true;
+                }
+                return FALSE;
+        } 
+        
+        
+         //////////////////////////////////////////////
+        //XXXXXXXXXXXXXXX ACCOUNT LOGS XXXXXXXXXXXXXXX
+        //////////////////////////////////////////////
+        
+        function _account_logs($brandID = '', $eventID = '', $params = '', $activity = ''){
+             
+            if(!empty($brandID)){
+                $this->load->model('notifications/m_subscription');
+                $check = $this->m_subscription->checkAccountHistory($brandID);
+                
+                if($check === FALSE){
+                    return -1;
+                } 
+                
+                if(in_array($activity, array('update','delete'))){
+                    $temp = array();
+                    $temp['brandID'] = $brandID;
+                    $temp['id'] = $eventID;
+                    $prevData = $this->fetch($temp);
+                    if(!empty($prevData) && is_array($prevData)){
+                        $prevData = $prevData[0];
+                    }
+                }
+               
+                if($activity == 'insert'){
+                    $newParams = $params;
+                    $data['activity'] = 'Event - Create New';
+                } elseif($activity == 'update') {
+                    if(!empty($prevData) && is_array($prevData)){
+                        $newParams['id'] = $eventID;
+                        $oldParams['id'] = $eventID;
+
+                        foreach ($params as $key => $value){
+                            if(array_key_exists($key,$prevData) && $prevData[$key] != $value){
+                                $newParams[$key] = $value;
+                                $oldParams[$key] = $prevData[$key];
+                            }
+                        }
+                    } 
+                    $data['activity'] = 'Event - Update';
+                } elseif($activity == 'delete'){
+                    if(!empty($prevData) && is_array($prevData)){
+                        $newParams['id'] = '';
+                        $oldParams['id'] = $eventID;
+
+                        $newParams['event'] = '';
+                        $oldParams['event'] = $prevData['event'];
+                    }
+                    $data['activity'] = 'Event - Delete';
+                }
+
+                $logs = array();
+                $prev_logs = array();
+                
+                if(isset($newParams['event'])){
+                    $logs['Event'] = (!empty($newParams['event'])) ? $newParams['event'] : '';
+                    if(isset($oldParams['event'])){
+                        $prev_logs['Event'] = (!empty($oldParams['event'])) ? $oldParams['event'] : '';
+                    }
+                }else if(!empty($prevData['event'])){
+                    $prev_logs['Event'] = $prevData['event'];
+                    $logs['Event'] = $prevData['event'];
+                }
+                
+                if(isset($newParams['status'])){
+                    $logs['Status'] = (!empty($newParams['status'])) ? 'Active' : 'Inactive';
+                    if(isset($oldParams['status'])){
+                        $prev_logs['Status'] = (!empty($oldParams['status'])) ? 'Active' : 'Inactive';
+                    }
+                }
+                
+                if(isset($newParams['attributes'])){
+                    $logs['Attributes'] = (!empty($newParams['attributes'])) ? $newParams['attributes'] : '';
+                    if(isset($oldParams['attributes'])){
+                        $prev_logs['Attributes'] = (!empty($oldParams['attributes'])) ? $oldParams['attributes'] : '';
+                    }
+                }
+                
+                if(isset($newParams['ltv'])){
+                    $logs['ltv'] = (!empty($newParams['ltv'])) ? $newParams['ltv'] : '';
+                    if(isset($oldParams['ltv'])){
+                        $prev_logs['ltv'] = (!empty($oldParams['ltv'])) ? $oldParams['ltv'] : '';
+                    }
+                }
+                
+                if(isset($newParams['scope'])){
+                    $scopeVal = array('On every visit','Per Session','Once in lifetime','Every');
+                    if(!empty($newParams['scope']) && in_array($newParams['scope'],[1,2,3])){
+                        $logs['Scope'] = $scopeVal[$newParams['scope']-1];
+                    }else if(!empty($newParams['scope']) ){
+                        $logs['Scope'] = $scopeVal[3].'-'.explode('_',$newParams['scope'])[1].' Days';
+                    }else{
+                        $logs['Scope'] = '';
+                    }
+                    if(isset($oldParams['scope'])){
+                        if(!empty($oldParams['scope']) && in_array($oldParams['scope'],[1,2,3])){
+                            $prev_logs['Scope'] = $scopeVal[$oldParams['scope']-1];
+                        }else if(!empty($oldParams['scope']) ){
+                            $prev_logs['Scope'] = $scopeVal[3].' - '.explode('_',$oldParams['scope'])[1]. ' Days';
+                        }else{
+                            $prev_logs['Scope'] = '';
+                        }
+                    }
+                }
+                
+                if(isset($newParams['url'])){
+                    $logs['Url'] = (!empty($newParams['url'])) ? $newParams['url'] : '';
+                    if(isset($oldParams['url'])){
+                        $prev_logs['Url'] = (!empty($oldParams['url'])) ? $oldParams['url'] : '';
+                    }
+                }
+                
+                if(isset($newParams['urlDetails'])){
+                    $logs['urlDetails'] = (!empty($newParams['urlDetails'])) ? $newParams['urlDetails'] : '';
+                    if(isset($oldParams['urlDetails'])){
+                        $prev_logs['urlDetails'] = (!empty($oldParams['urlDetails'])) ? $oldParams['urlDetails'] : '';
+                    }
+                }
+                
+                if(!empty($logs)){
+                    $data['log'] = json_encode($logs);
+                    $data['prev_log'] = json_encode($prev_logs);
+                }
+
+                return $data;
+            }
+
+            return -2;
+        }
+        
+        function _add_account_logs($brandID = '', $params = ''){
+            if(!empty($params) && is_array($params)){
+                $this->load->library('scapy/account_logs');
+                $this->account_logs->logs($brandID,$params);
+            }
+            return;
+        }
+        
+}

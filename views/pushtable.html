@@ -1,0 +1,859 @@
+ 
+<style>
+    /*-----------Switch Button-------*/
+    /*--------Status Input---*/
+    .lbl {
+        position: relative;
+        display: block;
+        height: 14px;
+        width: 40px;
+        background: #898989;
+        border-radius: 100px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .lbl:after {
+        position: absolute;
+        top: -3px;
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-radius: 100px;
+        background: #fff;
+        box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
+        content: '';
+        transition: all 0.3s ease;
+    }
+
+    .lbl:active:after {
+        transform: scale(1.15, 0.85);
+    }
+
+    .cbx:checked ~ label {
+        background: #6fbeb5;
+    }
+
+    .cbx:checked ~ label:after {
+        left: 20px;
+        background: #179588;
+    }
+
+    .cbx:disabled ~ label {
+        background: #d5d5d5;
+        pointer-events: none;
+    }
+
+    .cbx:disabled ~ label:after {
+        background: #bcbdbc;
+    }
+    .press{
+        padding-left:20px;
+        padding-top:12px;
+        padding-bottom:12px;
+    }
+    .press label{
+        margin-bottom:0px !important;
+    }
+    /*--------Status Input---*/
+
+    /*------------End-----*/
+
+    .push_form{
+    margin: 0 auto;
+    width: 46%;
+    background-color:#fff;
+    }
+    .push_form:hover{
+    background-color:#fff;
+    }
+  .onoffswitch .onoffswitch-inner:before {
+    padding-left: 4px;
+    font-size: 13px;
+    padding-right: 10px;
+    height: 34px;
+    padding-top: 0px;
+    }
+    .onoffswitch .onoffswitch-inner:after {
+    font-size: 13px;
+    height: 34px;
+    padding-top: 0px;
+    padding-right: 15px;
+    text-align: right;
+    }
+    .onoffswitch-switch {
+    width: 8px;
+    margin: 2px;
+    height: 30px;
+    right: 72px;
+    }
+    .inputMargin {
+    margin-bottom:1%;
+    }
+ 
+.notif_deleteList {
+        width: 32px;
+        height: 28px;
+        padding: 6px !important;
+        margin: 0px 4px;
+        border: 1px solid #8d8d8d;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    #filterbox{
+        display: inline-block;
+        width: auto;
+    }
+
+    /* modal Style */
+    .modal.left .modal-dialog,
+    .modal.right .modal-dialog {
+        position: fixed;
+        margin: auto;
+        width: 320px;
+        height: 100%;
+        -webkit-transform: translate3d(0%, 0, 0);
+            -ms-transform: translate3d(0%, 0, 0);
+             -o-transform: translate3d(0%, 0, 0);
+                transform: translate3d(0%, 0, 0);
+    }
+
+    .modal.left .modal-content,
+    .modal.right .modal-content {
+        height: 100vh;
+     
+    }
+    
+    .modal.left .modal-body,
+    .modal.right .modal-body {
+        padding: 0px;
+    }
+    .edit_campaign_data .modal-header{
+        padding:20px;
+    }
+    .edit_campaign_data .modal-footer{
+        width:100%;
+    }
+
+/*Left*/
+    .modal.left.fade .modal-dialog{
+        left: -320px;
+        -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
+           -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
+             -o-transition: opacity 0.3s linear, left 0.3s ease-out;
+                transition: opacity 0.3s linear, left 0.3s ease-out;
+    }
+    
+    .modal.left.fade.in .modal-dialog{
+        left: 0;
+    }
+        
+/*Right*/
+    .modal.right.fade .modal-dialog {
+        right: -320px;
+        -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+           -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+             -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+                transition: opacity 0.3s linear, right 0.3s ease-out;
+    }
+    
+    .modal.right.fade.in .modal-dialog {
+        right: 0;
+    }
+
+/* ----- MODAL STYLE ----- */
+    .modal-content {
+        border-radius: 0;
+        border: none;
+    }
+/* end modal style */
+ /***--------edit_campaigns button--------***/
+    .profileEdit{
+        background:#007bff;
+        border-color:#007bff;
+        padding:8px 15px;
+        font-size:15px;
+    }
+    /****--End---------------***/  
+  
+/*----Difference code dataTable---*/
+    .main-datatable .cust-datatable>tbody td{
+        padding: 5px 10px !important;
+        padding-left: 18px !important; 
+        /* color: #4d4d4d;  */
+        color:#333232;
+        font-size: 13px;
+        font-size:500;
+        word-break: break-word;
+        border-color: #eee !important;
+    }
+/*-----Diff End---*/
+
+/*---------Create modal design------------*/
+    .modal_campaign_header {
+        background: #fff;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 81vh;
+    }
+    .edit_create_data .modal-header {
+        padding: 20px;
+        color:#000;
+    }
+    .event_head span {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .inpt-5 {
+        padding-top: 10px;
+    }
+    .pb_8 {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .create_event_btn {
+        background: #007bff;
+        border-color: #007bff;
+        padding: 8px 15px;
+        font-size: 15px;
+    }
+    .custom_require{
+        position:relative;
+    }
+    .error_msg{
+        position:absolute;
+        bottom:-6px;
+        left:15px;
+        color: red;
+        display: none;
+        font-size: 11px;
+    }
+
+/*--------End------*/
+
+.activeCondition{
+        background-color: #2ec1cc !important;
+        color: #fff;
+    }
+    .andCodition,.orCodition{
+        width: 40px;
+        text-align: center;
+        background-color:#ffffff;
+        border: 1px solid #eee;
+        cursor:pointer;
+    }
+    .topBod, .bottomBod {
+        border-right: 1px solid #988888;
+        padding: 5px;
+        margin-left: 4px;
+        width: 30px;
+    }
+</style>
+
+<script>
+    var conditionVal;
+      $(document).ready(function() {
+
+        $(document).on("click",".createNew",function(e){
+            e.stopImmediatePropagation();
+            $("#createStaticEventModal").modal('show');
+            $("#event_name").val("");
+            $("#ltv_new").val("");
+            $('.totalCondition_0').addClass('hidden');
+        });
+        conditionValNew = 0;
+        $(document).on('click','.andCodition',function(){
+            $('.orCodition').removeClass('activeCondition');
+            $('.andCodition').addClass('activeCondition');
+            conditionValNew = 0;
+        });
+        $(document).on('click','.orCodition',function(){
+            $('.andCodition').removeClass('activeCondition');
+            $('.orCodition').addClass('activeCondition');
+            conditionValNew = 1;
+        });
+        $(document).on('click','.addFieldNew',function(){
+            if(conditionValNew == 1){
+                $('.andCodition').removeClass('activeCondition');
+                $('.orCodition').addClass('activeCondition');
+            }else{
+                $('.orCodition').removeClass('activeCondition');
+                $('.andCodition').addClass('activeCondition');
+            }
+        });
+
+
+           $("tr[title=slideEditView]").hide();
+            var modId;
+            var scopeVal;
+            var scopeValue; 
+            $(".action .editCampaign").click(function() {
+                
+                $('#editCamModal').modal('show');
+                id = $(this).attr("id");
+                id = id.split("_")[1];
+                var data = {
+                    csrf_token: '<?php print $csrf_token; ?>',
+                    caID:id
+                };
+                var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_EDIT_URL']."'";?>;
+                customAjaxCall(url, data, getResponse,1);
+                return false; 
+                
+            });
+
+            function getResponse(output){
+                // console.log(output);
+                $('#editmodalLebel2').html(output.eventNewID);
+                $('#editModalBody').html(output.html);
+            }
+
+            $(".displayUrl").click(function() {
+                var id = $(this).attr("id");
+                var editEvent = id.replace("url_", "");
+                $("#showPageUrl_"+editEvent).modal('show');
+                return false;
+            });
+            
+            $(".onoffswitch-checkbox").change(function() {
+                
+                var selectedID = $(this).attr("id").replace(/\D/g,'');
+                var data = {
+                    pushEventID:selectedID,
+                    status: $("#switch_status_"+selectedID+":checked").val() == "on"? "1":"0",
+                    csrf_token: '<?php print $csrf_token; ?>',
+                    submit: 1
+                };
+                var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_UPDATE_URL']."'";?>;
+                customAjaxCall(url, data, editwebUrlResponse);
+                return false;
+            }); 
+            function editwebUrlResponse(output){
+               var id = output.id;
+                if(output.responseType == 'success'){
+                    $("#pushEventTable").html(output.html);
+                    $("#dismiss").click();
+                    $(".modal-backdrop").hide();
+                }
+                $(".modal").modal("hide");
+                sweet_alert(output.status_code, output.message);
+            } 
+ 
+
+           
+            $(".action .delete").click(function() {
+                var data = {
+                        pushEventID:$(this).attr("id")
+                };
+                var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_DELETE_URL']."'";?>;
+                document.getElementById('confirmModalBtn').onclick = function () { 
+                    $("#confirmModal").modal('hide');
+                    return customAjaxCall(url, data, deletewebUrlResponse); 
+                }; 
+
+                $("#confirmModalTitle").html('Delete Rule');
+                $("#confirmModalText").html('Are you sure?');
+                $("#confirmModalBtn").html('Delete');
+
+                $("#confirmModal").modal('show');
+
+                return false; 
+            });
+
+            
+            function deletewebUrlResponse(output){
+                var pushEventID = output.pushEventID;
+                if(output.responseType == 'success'){
+                    $("tr[id="+pushEventID+"]").remove();
+                }
+                    sweet_alert(output.status_code, output.message);
+            }
+            
+            //function to detect links in pagination class of the main body in transadmin template      
+            $(".pagination li a").click(function(e) {       
+                var url = $(this).attr("href");
+                e.preventDefault();
+                customAjaxCall(url, '', paginationResponse);
+            });
+            
+
+            
+
+            function paginationResponse(output){
+                //$("#dismiss").click();
+                 $("#pushEventTable").html(output.html);
+            }
+            
+            //get Analytics
+            $('.analytics').click(function() {
+                var data = {
+                    event_name:$(this).attr("name"),
+                    tab_source:1
+                };
+                var url = <?php print "'".$this->appUrls['BRAND_ANALYTICS_EVENT_REPORT_URL']."'";?>;
+                customAjaxCall(url, data, changeMainBodyContent,1); 
+                return false; 
+            });
+
+            ///////////// DATA -TAble -Script- start \\\\\\\\\\\\\\\\\\\\  
+            
+            var dataTable = $('#datatable').DataTable({
+                    "pageLength": 10,
+                    'aoColumnDefs': [{
+                        'bSortable': false,
+                        'aTargets': ['nosort'],
+                    }],
+                    columnDefs: [
+                        { type: 'date-dd-mmm-yyyy', aTargets: [3,4] }
+                    ],
+                 "aoColumns": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+
+                ],
+                "order": [[ 0, "desc" ]],
+                "bLengthChange" : false,
+                "dom": '<"top">ct<"top"p><"clear">'
+                });
+                  $("#search2").keyup(function() {
+                     dataTable.search(this.value).draw();
+                      });  
+            ///////////// DATA -TAble -Script- end \\\\\\\\\\\\\\\\\\\\ 
+
+            var attributes = $('#attributes_new').sheepIt({
+                separator: '',
+                allowRemoveLast: false,
+                allowRemoveCurrent: true,
+                allowRemoveAll: false,
+                allowAdd: true,
+                allowAddN: false,
+                maxFormsCount: 5,
+                minFormsCount: 1
+                
+            });
+
+            var urlDetails_new = $('#urlDetails_new').sheepIt({
+                separator: '',
+                allowRemoveLast: false,
+                allowRemoveCurrent: true,
+                allowRemoveAll: false,
+                allowAdd: true,
+                allowAddN: false,
+                maxFormsCount: 5,
+                minFormsCount: 1,
+                data: []
+            });
+
+
+
+            //****** Table Th Fix Width *** */
+            setTimeout(function(){ 
+                $('.fix_width').css({'width':'100px'}); 
+            });
+            //**** End**//
+            
+        
+    });
+
+</script> 
+
+<div class="row"> 
+    <div class="col-md-12">
+        <?php   if(!empty($pushevent) && is_array($pushevent)){?>
+        <section class="panel panel-default">
+            <!-- <div class="panel-body">
+            
+
+                <a style="margin-bottom:10px;" data-toggle="modal" target="_blank" class="btn dim_button createNew" > <span class="glyphicon glyphicon-plus"></span> Create Event</a>
+                
+                <table width="100%" id="datatable" class="table table-striped table-hover">
+                    <form class="form-inline col-sm-10">
+                        <div class="form-group  pull-right">
+                         -->
+            <div class="panel-body pd-0 main-datatable">
+                <div class="col-sm-4 pull-left createSegment action">  
+                    <a style="margin-bottom:10px;"   target="_blank" class="btn dim_button createNew" > <span class="glyphicon glyphicon-plus"></span> Create New Event</a>
+                </div>
+                <div class="col-sm-8 pull-right pdClass">
+                    <div class="form-group pull-right searchInput">
+                        <label for="email">Search:</label>
+                        <input type="search" class="form-control" id="search2" placeholder=" ">
+                    </div>
+                </div>
+                <table width="100%" id="datatable" class="table table-striped cust-datatable dataTable no-footer">
+                    
+                    <thead>
+                        <tr>
+                            <th style="text-align:center; width: 65px;">Event</th>
+                            <th style="text-align:center; width: 65px;">Scope</th>
+                            <th style="text-align:center; width: 65px;" class="fix_width">Status</th>
+                            <th style="text-align:center; width: 65px;">Integration page</th>
+                            <th style="text-align:center; width: 65px;" class="fix_width">ltv</th>
+                            <th style="text-align:center; width: 65px;" class="fix_width">Options</th>
+                        </tr>
+                    </thead>
+
+                    <?php  foreach($pushevent as $row => $value){ ?>
+                        <tr class="data_view_<?php print $value['id'];?>" id = "<?php print $value['id'];?>">
+                        <td class="event" align="center" style='color:#000000 !important;'>
+                                <?php if(!empty($value['event'])){print $value['event'];}?>
+                            </td>
+                            <td class="scope" align="center">
+                                <?php if(!empty($value['scope'])){
+                                    if($value['scope']=='1'){
+                                        echo "On every visit";
+                                    }else if($value['scope']=='2'){
+                                        echo "Per session";
+                                    }else if($value['scope']=='3'){
+                                        echo "Once in lifetime";
+                                    }else{
+                                        echo "Every - ".explode('_',$value['scope'])[1]. ' Days';
+                                    }
+                                }?>
+                            </td>
+                            <td class="status" align="center" style="padding: 10px;">
+                                            <div class="onoffswitch col-sm-4" style="width:100px; padding-left:2%;">
+                                                <div class="row press">
+                                                    <input type="checkbox"  <?php if($this->loginType == 'subAccount' && $this->agentInfo['events_role'] == '3'){ print 'disabled'; } ?>  class="onoffswitch-checkbox cbx hidden"  id="switch_status_<?php print $value['id'];?>"               name="status_<?php print $value['id'];?>?>"  <?php if(isset($value['status']) && $value['status'] == 1){ print 'checked';}?>/>
+                                                    <label for="switch_status_<?php print $value['id'];?>" class="lbl"></label>
+                                                </div>
+                                            </div>
+                                <!-- <div class="onoffswitch col-sm-4" style="width:100px;padding-right:0px;float: none;">
+                                    <input type="checkbox" <?php if($this->loginType == 'subAccount' && $this->agentInfo['events_role'] == '3'){ print 'disabled'; } ?> class="onoffswitch-checkbox" id="switch_status_<?php print $value['id'];?>" name="status_<?php print $value['id'];?>"   <?php if(isset($value['status']) && $value['status'] == 1){ print 'checked';}?>>
+                                    <label class="onoffswitch-label" for="switch_status_<?php print $value['id'];?>">
+                                        <span class="onoffswitch-inner"></span>
+                                        <span class="onoffswitch-switch"></span>
+                                    </label>
+                                </div> -->
+                            </td>
+                            <td class="url" align="center">
+                                <a href='#' class=" displayUrl" id='url_<?php print $value['id'];?>'>Page Url</a>
+                                <!-- <?php if(!empty($value['url'])){print $value['url'];}?> -->
+                            </td>
+                            <td class="ltv" align="center">
+                                <?php if(!empty($value['ltv'])){print $value['ltv'];}?>     
+                            </td>
+                           
+                            <td align="center" class="action">
+                            <span class="notif_optionList">
+                                <div class="btn-group">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" title="More" style="cursor:pointer">
+                                    <i class="fa fa-ellipsis-h" style="color: #8e8e8e; margin:2px; " aria-hidden="true"></i> </a>
+
+                                    <ul class="dropdown-menu menuContent" style="box-shadow: 10px 10px 20px #c8c8c8; left: -60px;">
+                                    <li class="analytics" data-analyticsId='<?php print $value['id'];?>' name='<?php print !empty($value['event'])?$value['event']:'';?>'>
+                                    <a style=" color: #333333;" href="#"  class="getAnalytics" title="Get Analytics"><span class="fa fa-line-chart" aria-hidden="true" style="margin-right:10px;"></span> Analytics</a></li>
+
+                                    <li><a style="color: #333333;" href="#" class="editCampaign" title="Edit" id="editEvent_<?php print $value['id'];?>"><span class="glyphicon glyphicon-edit"></span> Edit</a> </li>
+
+                                    <li data-deleteId='<?php print $value['id'];?>'><a style="color: #333333;" id="<?php print $value['id'];?>" href="#" class="delete" title="Delete"><span class="glyphicon glyphicon-remove-circle"></span> Delete</a></li>
+                                    </ul>
+                                </div>
+                            </span>
+                        </td>
+
+                        </tr>
+                    <?php }?>
+
+                
+                </table>
+                <?php  foreach($pushevent as $row => $value){ ?>
+                    <div class="modal fade" id="showPageUrl_<?php print $value['id'];?>" role="dialog">
+                        <div class="modal-dialog modal-md">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Page URL</h4>
+                                </div>
+                                <div class="modal-body"  >
+                                    
+                                    <div id="showPageUrlBody_<?php print $value['id'];?>">
+                                    </div>
+                                    <div class="row">
+                                        <?php if(!empty($value['url'])){ ?>
+                                            <div class="col-sm-1">
+                                            </div>
+                                            <div class="col-sm-10">
+                                                <input type='text' value='<?php print $value['url'];?>' class='form-control ' style='margin-bottom: 10px;' disabled='disabled'/>
+                                            </div>
+                                            <div class="col-sm-1">
+                                            </div>
+                                            
+                                        <?php } else { ?>
+                                            <div class="col-sm-5">
+                                                <div class="showPageUrlBody2_<?php print $value['id'];?>">
+                                                    <?php if(is_array($value['urlDetails'])){ ?>
+                                                        <?php foreach($value['urlDetails'] as $key => $val){ ?>
+                                                            
+                                                                <?php if(!empty($val['t']) && $val['t'] == 40){
+                                                                        $urlType = 'Contains' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 10){
+                                                                        $urlType = 'Equals to' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 45){
+                                                                        $urlType = 'Starts with' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 35){
+                                                                        $urlType = 'Ends with' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 15){
+                                                                        $urlType = 'Not equals to' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 20){
+                                                                        $urlType = 'Not contains' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 30){
+                                                                        $urlType = 'Not starts with' ;
+                                                                    }else if(!empty($val['t']) && $val['t'] == 25){
+                                                                        $urlType = 'Not ends with' ;
+                                                                    } 
+                                                                
+                                                                ?>
+                                                                
+                                                            <input type='text' value='<?php print !empty($urlType)?$urlType:'';?>' class='form-control ' style='margin-bottom: 10px;' disabled='disabled'/>
+
+                                                        <?php }?>
+                                                    <?php }?>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-7">
+                                                <div class="showPageUrlBody2_<?php print $value['id'];?>">
+                                                    <?php if(is_array($value['urlDetails'])){ ?>
+                                                        <?php foreach($value['urlDetails'] as $key => $val){ ?>
+                                                            <input type='text' value='<?php print !empty($val['u'])?$val['u']:'';?>' class='form-control ' style='margin-bottom: 10px;' disabled='disabled'/>
+                                                        <?php }?>
+                                                    <?php }?>
+                                                
+                                                </div>
+                                            </div>
+                                        <?php }?>
+                                        
+                                    </div>
+                                    
+                                </div>
+                                <div class="modal-footer" style="border-top:none;">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                <?php }?>
+                <?php if(!empty($pagination)){ ?>
+                            <?php print $pagination;?>
+                    <?php }?>
+
+            </div>
+        </section>
+        <?php } else{ ?>
+        <section class="panel panel-default" style="margin-bottom: 100px;background-color: rgba(255, 255, 255, 0);border: 1px solid transparent;border-radius: 2px;-webkit-box-shadow: none;box-shadow: none;">
+            <div class="panel-body" >
+                 <div class="col-sm-6 col-sm-offset-3"  id="myDiv" style="background-color: #fffff;text-align: center; margin-bottom: 40px;padding: 55px;">
+                     
+                     <span style="position: relative;font-size: 22px;font-family: sans-serif;color: #a09d9d; ">You don't have any Events </span>
+                      <br>
+                      <a style=" margin-top: 20px; text-transform: initial;" target="_blank" <?php $demo =  $this->utils->demo_account($this->selfUID);if($demo == 1){ print "disabled"; }?> class="btn dim_button createNew" data-toggle="modal"  href="<?php //print $this->appUrls['BRAND_AUDIENCE_NEW_URL']; ?>"> <span class="glyphicon glyphicon-plus" style="margin-right: 5px;"></span>Create Event</a>
+                </div>
+             </div>
+        </section>
+        <?php }?>
+                
+                </div>
+            </div> 
+<!-- Modal -->
+<div class="modal right fade" id="editCamModal" tabindex="-1" role="dialog" aria-labelledby="myModal2" >
+    <div class="modal-dialog" role="document" style='width:50%;'>
+        <div class="modal-content edit_campaign_data">
+
+            <div class="modal-header" style='background-color:#ffffff;'>
+                <button type="button" style='color:#000000' class="close" data-dismiss="modal" aria-label="Close" id="closeEditModal"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editmodalLebel2" style='color:#000000;'>Loading</h4>
+            </div>
+
+            <div class="modal-body" id="editModalBody" style="overflow-x: hidden;">
+                <p style='margin-left:50%;margin-top:30%;'><i class="fa fa-spinner fa-spin" style="font-size:48px"></i>
+                </p>
+            </div>
+        </div><!-- modal-content -->
+    </div><!-- modal-dialog -->
+</div><!-- modal -->
+ 
+
+<!-- Modal -->
+<div class="modal right fade" id="createStaticEventModal" tabindex="-1" role="dialog" aria-labelledby="myModal2" >
+    <div class="modal-dialog" role="document" style='width:50%;'>
+        <div class="modal-content edit_create_data">
+
+            <div class="modal-header" style='background-color:#ffffff;'>
+                <button type="button" style='color:#000000' class="close" data-dismiss="modal" aria-label="Close" id="closeCreateModal"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createmodalLebel2" style='color:#000000;'>Create Event</h4>
+            </div>
+
+            <div class="modal-body" id="createModalBody">
+                
+            <div class="modal_campaign_header">
+                <div class="row">
+                    <div class="col-sm-offset-1 col-sm-10 custom_header">
+                        <div class="row pb_8">
+                            <div class='col-sm-12 event_head'>
+                                <span>Event</span>
+                            </div>
+                            <div class='col-sm-12 inpt-5'>
+                                <input type="text" class="form-control" name="event_name" id="event_name" required="required" value="" />
+                                <span id="event_name_error" style="color: red;display: none;font-size: 11px;">Required*</span>
+                            </div>
+                        </div>
+                        <div class="row pb_8">
+                            <div class='col-sm-12 event_head'>
+                                <span>Scope</span>
+                            </div>
+                            <div class='col-sm-12 inpt-5'>
+                                <div class="row">
+                                    <div class="col-sm-4" style="margin-bottom:5px;">
+                                        <span><input type="radio" name="new_scope" value="1"> On every visit</span>
+                                    </div>
+                                    <div class="col-sm-4" style="margin-bottom:5px;">
+                                        <span><input type="radio" name="new_scope" value="2"> Per Session</span>
+                                    </div>
+                                    <div class="col-sm-4" >
+                                        <span><input type="radio" name="new_scope" value="3"> Once in lifetime</span>
+                                    </div>
+                                </div>
+                                <div class="row pb_8 custom_require">
+                                    <div class="col-sm-12" style="padding-right:0px;">
+                                        <span><input type="radio" name="new_scope" value="4" checked="checked"> Custom</span>
+                                    </div>
+                                    <div class="col-sm-6 inpt-5 ">
+                                        <input class='form-control newScopeInput' type='text' onkeypress='return event.charCode >= 48 && event.charCode <= 57' name='new_custom_scope' id='new_custom_scope'  style='padding-right:0px;' value=""/>
+                                    </div>
+                                    <div class="col-sm-2 inpt-5 newScopeInput" style='font-size: 15px; margin-top:5px; padding-left: 6px;'>
+                                        Days
+                                    </div>
+                                    <span id="event_scope_error" class="error_msg">Required*</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row pb_8">
+                            <div class='col-sm-12 event_head'>
+                                <span>ltv</span>
+                            </div>
+                            <div class='col-sm-12 inpt-5'>
+                                <input type="number" class="form-control" id="ltv_new" name="ltv_new" value="" required="required"/>
+                                <span id="event_itv" style="color: red;display: none;font-size: 11px;">Required*</span>
+                            </div>
+                        </div>
+                        <div class="row pb_8">
+                            <div class='col-sm-12 event_head'>
+                                <span>Attributes</span>
+                            </div>
+                            <div class='col-sm-12 inpt-5'>
+                                <div id = "attributes_new">
+                                    <div id="attributes_new_template">
+                                        <div class="form-group row">
+                                            <div class="col-sm-5">
+                                                <input id="attributes_new_#index#_e" class="form-control" name="attributes_new[#index#][e]" type="text" value = "" />
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input id="attributes_new_#index#_d" class="form-control" name="attributes_new[#index#][d]" type="text" value = "" />
+                                            </div>
+                                            <div class="col-sm-2 inpt-5">
+                                                <a id="attributes_new_remove_current"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                            
+                                    <div id="attributes_new_noforms_template">No rules defined</div>
+                                    <!-- /No forms template-->
+
+                                    <div  style="text-align: left;padding-left:5px;margin-left: -4px;" id="attributes_new_controls">
+                                        <a id="attributes_new_add" class="btn btn-info btn-xs">Add More Field</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='col-sm-2'>
+                            </div>
+                        </div>
+                        <div class="row pb_8">
+                            <div class='col-sm-12 event_head'>
+                                <span>Page URL</span>
+                            </div>
+                            <div class='col-sm-12 inpt-5'>
+                            <div id = "urlDetails_new">
+                                    <div id="urlDetails_new_template">
+                                        <div class="totalCondition_#index# pageConditionNew" name="totalCondition[#index#]">
+                                            <div class="topBod" id="top_#index#" name="top[#index#]"></div>                  
+                                                <div class="row">
+                                                    <div class="col-sm-1" style="margin-left: 0px;">
+                                                        <div type="text" class="andCodition <?php if(isset($pushevent[0]['gcRule']) && $pushevent[0]['gcRule'] == 0){print "activeCondition";}?>" style="    font-size: 9px;padding: 3px;border-radius: 5px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;border-right: 1px solid #988888 !important;    border-color: #cbd5dd;">
+                                                        AND
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-1" style="padding-left: 0px;">
+                                                    <div type="text" class="orCodition <?php if(!empty($pushevent[0]['gcRule']) && $pushevent[0]['gcRule'] == 1){print "activeCondition";}?>" style="font-size: 9px;padding: 3px;border-radius: 5px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;border-left: 1px solid #988888 !important;    border-color: #cbd5dd;">
+                                                        OR
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="bottomBod" id="bottom_#index#" name="bottom[#index#]"></div>
+                                        </div>
+                                        <div class="form-group row" style='margin-bottom:0px;'>
+                                            <div class="col-sm-5">
+                                                <select class="form-control"  id="urlDetails_new_#index#_t" name="urlDetails_new[#index#][d]">
+                                                    <option   value="40">Contains</option>
+                                                    <option   value="10">Equals to</option>
+                                                    <option   value="45">Starts with</option>
+                                                    <option   value="35">Ends with</option>
+                                                    <option   value="15">Not equals to</option>
+                                                    <option   value="20">Not contains</option>
+                                                    <option   value="30">Not starts with</option>
+                                                    <option   value="25">Not ends with</option>
+                                                    
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <input id="urlDetails_new_#index#_u" class="form-control" name="urlDetails_new[#index#][u]" type="text" value = "" />
+                                            </div>
+                                            <div class="col-sm-2 inpt-5">
+                                                <a id="urlDetails_new_remove_current"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                            
+                                    <div id="urlDetails_new_noforms_template">No rules defined</div>
+                                    <!-- /No forms template-->
+
+                                    <div  style="text-align: left;padding-left:5px;margin-left: -4px;margin-top:15px;" id="urlDetails_new_controls">
+                                        <a id="urlDetails_new_add" class="btn btn-info btn-xs addFieldNew">Add More Field</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class='col-sm-2'>
+                            </div>
+                        </div>
+                    
+                        <div class="row" style=" padding-top: 12px; border-top: 1px solid #f3f2f2; position: fixed; bottom: 7px; left: 15px; width: 100%; background: #fff;">
+                            <div class="col-sm-3">
+                            </div>
+                            <div class="col-sm-6" style="text-align:center;">
+                                <button id="" class="pushEventSubmit  create_event_btn btn btn-primary" type="submit" value="Submit"><span><span>Submit</span></span></button>
+                            </div>
+                            <div class="col-sm-3">
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+
+        </div><!-- modal-content -->
+    </div><!-- modal-dialog -->
+</div><!-- modal -->
+
+
+
+
+
+
+
+   

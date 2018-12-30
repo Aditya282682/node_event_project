@@ -1,0 +1,265 @@
+<style>
+     .activeCondition{
+        background-color: #2ec1cc !important;
+        color: #fff;
+    }
+    .andCodition,.orCodition{
+        width: 40px;
+        text-align: center;
+        background-color:#ffffff;
+        border: 1px solid #eee;
+        cursor:pointer;
+    }
+</style>
+<script> 
+     $(document).ready(function() {
+         var conditionValNew = 0; 
+            var customRule = $('#attributes').sheepIt({
+                    separator: '',
+                    allowRemoveLast: false,
+                    allowRemoveCurrent: true,
+                    allowRemoveAll: false,
+                    allowAdd: true,
+                    allowAddN: false,
+                    maxFormsCount: 5,
+                    minFormsCount: 1
+                });
+            var test = $('#urlDetails').sheepIt({
+                    separator: '',
+                    allowRemoveLast: false,
+                    allowRemoveCurrent: true,
+                    allowRemoveAll: false,
+                    allowAdd: true,
+                    allowAddN: false,
+                    maxFormsCount: 5,
+                    minFormsCount: 1
+                });
+         
+            
+           $('.form2').validate();
+        
+           $(document).on('click','.removeNew',function(){
+                var remove = $(this).parents(".col-sm-2").prev().find("input").attr('id');
+                remove = remove.split("_")[1];
+                if(remove == 0){
+                    $("#urlDetails_template0").find(".pageConditionNew").addClass('hidden');
+                }
+            });
+           $(document).on('click','.andCodition',function(){
+                $('.orCodition').removeClass('activeCondition');
+                $('.andCodition').addClass('activeCondition');
+                conditionValNew = 0;
+            });
+            $(document).on('click','.orCodition',function(){
+                $('.andCodition').removeClass('activeCondition');
+                $('.orCodition').addClass('activeCondition');
+                conditionValNew = 1;
+            });
+            $(document).on('click','.addFieldNew',function(){
+                if(conditionValNew == 1){
+                    $('.andCodition').removeClass('activeCondition');
+                    $('.orCodition').addClass('activeCondition');
+                }else{
+                    $('.orCodition').removeClass('activeCondition');
+                    $('.andCodition').addClass('activeCondition');
+                }
+            });
+
+            $(".pushEventSubmit").click(function() {
+                if ($(".form2").valid()) {
+                   var data = {
+                        event:$("#pushEvent").find("input[name =event]").val(),
+                        attributes: $('#attributes :not(:hidden)').serializeArray(),
+                        urlDetails: $('#urlDetails :not(:hidden)').serializeArray(),
+                        ltv: $("#pushEvent").find("input[name =ltv]").val(),
+                        scope: $("#pushEvent #scope").find("option:selected").val(),
+                        gcRule: conditionValNew,
+                        // url: $("#pushEvent").find("input[name =url]").val(),
+                        csrf_token: '<?php print $csrf_token; ?>',
+                        submit: 1
+                    };
+                    $(".pTypeError").hide();
+                    var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_INSERT_URL']."'";?>;
+                    customAjaxCall(url, data, autoResponderResponse);
+                }
+                return false;
+            });
+
+            function autoResponderResponse(output){
+                if(output.responseType === 'success'){
+                    var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_LIST_URL']."'";?>;
+                    customAjaxCall(url,"", listResponse);
+                }
+                sweet_alert(output.status_code, output.message);
+            }
+            
+            function listResponse(output){
+                $("#pushEventTable").html(output.html);
+                $("#dismiss").click();
+                $(".modal-backdrop").hide();
+            }  
+
+
+ 
+    });
+</script>
+<script>
+//setTimeout(function(){ 
+//    var height = screen.height;
+//    var total = (height/2) - 250;
+// document.getElementById("myDiv").style.marginTop = total + 'px';   
+//});
+
+
+
+</script>
+
+
+
+<div id="basic">
+<!--        <script>
+        $(document).ready(function() {
+               
+                var url = <?php print "'".$this->appUrls['BRAND_PUSH_EVENT_LIST_URL']."'";?>;
+                customAjaxCall(url,"", response);
+
+                function response(output){
+                        $("#pushEventTable").html(output.html);
+                }  
+        });		
+        </script>-->
+        
+        <div id="pushEventTable" ><?php print_r($list); ?></div>
+        
+ <hr style="margin: 40px 0px;"/>
+           
+<!--    </div>-->
+    
+     <!-- create App Modal start -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel"> Create Event</h4>
+          </div>
+          <div class="modal-body">
+            <form id="pushEvent" class="form2" method="post">
+              <div class="form-group">
+                <label for="event"  class="control-label"> Event* </label>
+                <input type="text" class="form-control" name="event" id="event" required="required"/>
+                 <span class="pTypeError" style="color: red;display: none;font-size: 11px;">Required*</span>
+              </div> 
+             <div class="row">
+                    <div class="col-sm-6">
+               <div class="form-group">
+                    <label for="scope"  class="control-label"> Scope   </label>
+                    <div>
+                        <select class="form-control"  id="scope" >
+                            <option  value="2">Per Session</option>
+                            <option  value="1">On every visit</option>
+                            <option  value="3">Once in lifetime</option>
+                        </select> 
+                    </div>
+                </div>  
+                </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="ltv"  class="control-label"> ltv  </label>
+                            <input type="number" class="form-control" name="ltv" placeholder="Enter Numerics Only" required="required"/>
+                        </div> 
+                    </div>
+                </div>
+               
+                <div class="form-group">
+                    <label>Attributes</label>
+                    <div id = "attributes">
+                        <div id="attributes_template">
+                            <div class="form-group row">
+                                <div class="col-sm-5">
+                                    <input id="attributes_#index#_e" class="form-control" name="attributes[#index#][e]" type="text" value = "" />
+                                </div>
+                                <div class="col-sm-5">
+                                    <input id="attributes_#index#_d" class="form-control" name="attributes[#index#][d]" type="text" value = "" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <a id="attributes_remove_current"><span class="glyphicon glyphicon-remove-circle"></span></a>
+                                </div>
+                                
+                            </div>
+                        </div>
+                
+                        <div id="attributes_noforms_template">
+                            No rules defined
+                        </div>
+                        <!-- /No forms template-->
+
+                        <div  style="text-align: left;padding-left:5px;margin-left: -4px;" id="attributes_controls">
+                            <a id="attributes_add" class="btn btn-info btn-xs ">Add More Field</a>
+                        </div>
+                    </div>
+                </div> 
+                
+                <div class="form-group">
+                    <label>Page Url</label>
+                    <div id = "urlDetails">
+                        <div id="urlDetails_template">
+                            <div class="totalCondition_#index# pageConditionNew" name="totalCondition[#index#]">
+                                <div class="topBod" id="top_#index#" name="top[#index#]"></div>                  
+                                <div class="row">
+                                    <div class="col-sm-1" style='margin-left: 0px;'>
+                                        <div type="text" class="andCodition <?php if(!empty($value['gcRule']) && $value['gcRule'] == 0){print "activeCondition";}?>" style="    font-size: 9px;padding: 3px;border-radius: 5px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;border-right: 1px solid #988888 !important;    border-color: #cbd5dd;"/>
+                                            AND
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-1" style='padding-left: 0px;'>
+                                        <div type="text" class="orCodition <?php if(!empty($value['gcRule']) && $value['gcRule'] == 1){print "activeCondition";}?>" style="    font-size: 9px;padding: 3px;border-radius: 5px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;border-left: 1px solid #988888 !important;    border-color: #cbd5dd;" />
+                                            OR
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottomBod" id="bottom_#index#" name="bottom[#index#]"></div>
+                            </div>
+                            <div class="form-group row" style="margin-bottom:0px;">
+                                <div class="col-sm-5">
+                                    <select class="form-control"  id="urlDetails_#index#_t" name="urlDetails[#index#][d]">
+                                        <option   value="40">Contains</option>
+                                        <option   value="10">Equals to</option>
+                                        <option   value="45">Starts with</option>
+                                        <option   value="35">Ends with</option>
+                                        <option   value="15">Not equals to</option>
+                                        <option   value="20">Not contains</option>
+                                        <option   value="30">Not starts with</option>
+                                        <option   value="25">Not ends with</option>
+                                        
+                                    </select>
+                                </div>
+                                <div class="col-sm-5">
+                                    <input id="urlDetails_#index#_u" class="form-control" name="urlDetails[#index#][u]" type="text" value = "" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <a id="urlDetails_remove_current"><span class="glyphicon glyphicon-remove-circle removeNew"></span></a>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div id="urlDetails_noforms_template">No rules defined</div>
+                        <!-- /No forms template-->
+
+                        <div  style="text-align: left;padding-left:5px;margin-left: -4px;margin-top:10px;" id="urlDetails_controls">
+                            <a id="urlDetails_add" class="btn btn-info btn-xs addFieldNew">Add More Field</a>
+                        </div>
+                    </div>
+                </div> 
+
+            </form>
+          </div>
+          <div class="modal-footer" style="text-align: left; border-top: 1px solid #ffffff;    margin-top: -25px;">
+            <button type="button" class="btn btn-default" id="dismiss" data-dismiss="modal">Close</button>
+            <button class = "pushEventSubmit btn btn-primary" type="button">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div> 
+    <!-------------create App Modal close------------------------>
+     </div> 
