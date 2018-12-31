@@ -9,6 +9,7 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+app.set('view options', { layout: false});
 
 app.use(logger('dev'));
 app.use(express.json());

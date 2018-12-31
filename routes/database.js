@@ -7,7 +7,7 @@ var db_connect = function (project) {
             host: "localhost",
             user: "root",
             password: "",
-            database: "new_task"
+            database: "test"
         });
         
         connection.connect(function (err) {
