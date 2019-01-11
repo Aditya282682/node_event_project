@@ -17,7 +17,6 @@ var db_connect = function (project) {
             }else{
                 resolve(connection);
             }
-
         });
     });
     return promise;

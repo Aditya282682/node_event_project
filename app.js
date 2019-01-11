@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(function (req, res, next) {
 	// check if client sent cookie
-	var cookie = req.cookies.isLogin;
+	let cookie = req.cookies.isLogin;
 	if (cookie === undefined && ['/users/sinein' ,'/', '/users/sineup'].indexOf(req.originalUrl) == -1){
 		return	res.redirect('/');
 	} 

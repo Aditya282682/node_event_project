@@ -55,10 +55,10 @@ router.post('/sinein',function(req,res, next){
 		let email = req.body.email;
 		let pass = req.body.password;
 		let params = [];
-		sql = "Select email,password from sine_up where email="+"'"+email+"'"+" and password="+"'"+pass+"'" ;
+		sql = "Select id,email,password from sine_up where email="+"'"+email+"'"+" and password="+"'"+pass+"'" ;
 		db.query(result,sql,params).then(result => {
 			if(result.length > 0){
-				res.cookie('isLogin',"1");
+				res.cookie('isLogin',"login_user_"+result[0].id);
 				response.code = "103";
 				response.message = "Successfully sine in";	
 			}else{
