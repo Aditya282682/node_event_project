@@ -28,10 +28,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Muli:400,300' rel='stylesheet' type='text/css'>
     <link href="assets/css/themify-icons.css" rel="stylesheet">
-    <script>
-        var test = {{{data}}};
-        console.log(test.id);
-    </script>
+    
 </head>
 <body>
 
@@ -265,19 +262,19 @@
                                         <div class="col-md-5">
                                             <div class="form-group">
                                                 <label>Company</label>
-                                                <input type="text" class="form-control border-input" disabled placeholder="Company" value="Creative Code Inc.">
+                                                <input type="text" id="companyName" class="form-control border-input" disabled placeholder="Company" value="Test INC.">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Username</label> <p>{{{data}}}</p>
-                                                <input type="text" class="form-control border-input" placeholder="Username" value="{{result}}">
+                                                <label>Username</label>
+                                                <input type="text" class="form-control border-input" placeholder="Username" id="userName" value="">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="exampleInputEmail1">Email address</label>
-                                                <input type="email" class="form-control border-input" placeholder="Email">
+                                                <input type="email" id ="emailAddress" class="form-control border-input" placeholder="Email" value="" disabled>
                                             </div>
                                         </div>
                                     </div>
@@ -286,13 +283,13 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>First Name</label>
-                                                <input type="text" class="form-control border-input" placeholder="Company" value="Chet">
+                                                <input type="text" id="firstName" class="form-control border-input" placeholder="First Name" value="">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Last Name</label>
-                                                <input type="text" class="form-control border-input" placeholder="Last Name" value="Faker">
+                                                <input type="text" id="lastName" class="form-control border-input" placeholder="Last Name" value="">
                                             </div>
                                         </div>
                                     </div>
@@ -301,7 +298,7 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>Address</label>
-                                                <input type="text" class="form-control border-input" placeholder="Home Address" value="Melbourne, Australia">
+                                                <input type="text" id="homeAddress" class="form-control border-input" placeholder="Home Address" value="">
                                             </div>
                                         </div>
                                     </div>
@@ -310,19 +307,19 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>City</label>
-                                                <input type="text" class="form-control border-input" placeholder="City" value="Melbourne">
+                                                <input type="text" id="city" class="form-control border-input" placeholder="City" value="">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Country</label>
-                                                <input type="text" class="form-control border-input" placeholder="Country" value="Australia">
+                                                <input type="text" id="country" class="form-control border-input" placeholder="Country" value="">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Postal Code</label>
-                                                <input type="number" class="form-control border-input" placeholder="ZIP Code">
+                                                <input type="number" id="zipCode" class="form-control border-input" placeholder="ZIP Code">
                                             </div>
                                         </div>
                                     </div>
@@ -331,7 +328,7 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>About Me</label>
-                                                <textarea rows="5" class="form-control border-input" placeholder="Here can be your description" value="Mike">Oh so, your weak rhyme
+                                                <textarea rows="5" id="aboutMe" class="form-control border-input" placeholder="Here can be your description" value="Mike">Oh so, your weak rhyme
 You doubt I'll bother, reading into it
 I'll probably won't, left to my own devices
 But that's the difference in our opinions.</textarea>
@@ -339,7 +336,7 @@ But that's the difference in our opinions.</textarea>
                                         </div>
                                     </div>
                                     <div class="text-center">
-                                        <button type="submit" class="btn btn-info btn-fill btn-wd">Update Profile</button>
+                                        <button id="updateProfile" class="btn btn-info btn-fill btn-wd">Update Profile</button>
                                     </div>
                                     <div class="clearfix"></div>
                                 </form>
@@ -408,5 +405,15 @@ But that's the difference in our opinions.</textarea>
 
 	<!-- Paper Dashboard DEMO methods, don't include it in your project! -->
 	<script src="assets/js/demo.js"></script>
+    
+    <script>
+        $(document).ready(function(){
+            var profileData = {{{data}}};
+            console.log(profileData);
+            $("#userName").val(profileData.username);
+            $("#emailAddress").val(profileData.email);
+            $("#userName").val(profileData.username);
+        });
+    </script>
 
 </html>
